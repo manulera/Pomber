@@ -3,28 +3,34 @@ if nargin<2
     ind = false;
 end
 
-if ~ind
-    axes(handles.ax_1)
-    [~,x]=ginput(1);
-    ind = floor((x-1)/handles.cropsize(1))+1;
+if numel(handles.list)==1
+    return
 end
+numframes=numel(handles.list);
+frame_height = size(handles.ima_long{1},1)/numframes;
+
+% if ~ind
+%     axes(handles.ax_1)
+%     [~,x]=ginput(1);
+%     ind = floor((x-1)/frame_height)+1;
+% end
 
 if ind == 1 || ind == numel(handles.list)
     handles.masks(:,:,ind) = [];
-    handles.cont(ind) = [];
     handles.list(ind) = [];
-    if ind==1
-        handles.current = numel(handles.list)-handles.limshow + 1;
-    else
-        handles.current = 1;
-    end
 else
-    
+    % This behaviour is not used anymore, but was intended to be used in
+    % case you want to ignore certain frames.
     handles.masks(:,:,ind) = 0;
-    % I think its better just to get it from the empty contours, otherwise
-    % makes things more complicated
-    handles.cont{ind} = [];
     
+end
+
+handles = cprof_update(handles);
+if ind==1
+    maxsl= get(handles.slider_main,'Max');
+    set(handles.slider_main,'Value',maxsl);
+else
+    set(handles.slider_main,'Value',1);
 end
 
 end

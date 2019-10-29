@@ -285,7 +285,9 @@ classdef cellu
             
         end
         function obj = find_feature(obj,channel,im_info,repeat,which_frames)
-            
+            if isempty(obj.features{channel}.name)
+                return
+            end
             if nargin<4||isempty(repeat)
                 repeat = 0;
             end

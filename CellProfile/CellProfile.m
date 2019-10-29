@@ -22,7 +22,7 @@ function varargout = CellProfile(varargin)
 
 % Edit the above text to modify the response to help CellProfile
 
-% Last Modified by GUIDE v2.5 29-Jan-2019 11:59:47
+% Last Modified by GUIDE v2.5 29-Oct-2019 14:19:55
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -87,9 +87,11 @@ function butt_prev_Callback(hObject, eventdata, handles)
 for i = 1:str2double(handles.texted_numadd.String)
     handles = cprof_add(handles,false);
 end
+% Update the big image and the slider
 
-cprof_show(handles);
+handles=cprof_update(handles);
 guidata(hObject, handles);
+cprof_show(handles);
 
 % --- Executes on button press in butt_next.
 function butt_next_Callback(hObject, eventdata, handles)
@@ -97,13 +99,6 @@ function butt_next_Callback(hObject, eventdata, handles)
 for i = 1:str2double(handles.texted_numadd.String)
     handles = cprof_add(handles,true);
 end
-cprof_show(handles);
-guidata(hObject, handles);
-
-% --- Executes on button press in butt_correct.
-function butt_correct_Callback(hObject, eventdata, handles)
-
-handles = cprof_correct( handles );
 cprof_show(handles);
 guidata(hObject, handles);
 
@@ -121,47 +116,15 @@ handles.output = cprof_done( handles );
 uiresume(handles.figure1);
 guidata(hObject, handles);
 
-
-
 % --- Executes on button press in butt_restart.
 function butt_restart_Callback(hObject, eventdata, handles)
 handles = cprof_init(handles,handles.restore);
 cprof_show(handles);
 guidata(hObject, handles);
 
-
-% --- Executes on button press in butt_delete.
-function butt_delete_Callback(hObject, eventdata, handles)
-[ handles ] = cprof_remove( handles );
-cprof_show(handles);
-guidata(hObject, handles);
-
 % --- Executes on button press in butt_draw.
 function butt_draw_Callback(hObject, eventdata, handles)
 handles = cprof_draw(handles);
-cprof_show(handles);
-guidata(hObject, handles);
-
-% --- Executes on button press in butt_horiz.
-function butt_horiz_Callback(hObject, eventdata, handles)
-handles = cprof_omit(handles,1);
-cprof_show(handles);
-guidata(hObject, handles);
-
-
-% --- Executes on button press in butt_vert.
-function butt_vert_Callback(hObject, eventdata, handles)
-handles = cprof_omit(handles,0);
-cprof_show(handles);
-guidata(hObject, handles);
-
-
-% --- Executes on button press in butt_retry.
-function butt_retry_Callback(hObject, eventdata, handles)
-% hObject    handle to butt_retry (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-handles = cprof_retry( handles );
 cprof_show(handles);
 guidata(hObject, handles);
 
@@ -215,22 +178,10 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in butt_cellmoves.
-function butt_cellmoves_Callback(hObject, eventdata, handles)
-% hObject    handle to butt_cellmoves (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-handles = cprof_cellmoves( handles );
-cprof_show(handles);
-guidata(hObject, handles);
-
-
 % --- Executes on slider movement.
 function slider_main_Callback(hObject, eventdata, handles)
-
-handles.current= round(get(hObject,'Value'));
-cprof_show(handles);
-
+get(hObject,'Value')
+cprof_show(handles,1);
 guidata(hObject, handles);
 
 
@@ -252,10 +203,8 @@ function butt_delete_fist_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles = cprof_remove(handles,1);
-handles.current = numel(handles.list)-handles.limshow + 1;
 cprof_show(handles);
 guidata(hObject, handles);
-
 
 
 % --- Executes on button press in butt_delete_last.
@@ -267,3 +216,22 @@ handles = cprof_remove(handles,numel(handles.list));
 handles.current = 1;
 cprof_show(handles);
 guidata(hObject, handles);
+
+
+function texted_numdisplayed_Callback(hObject, eventdata, handles)
+handles=cprof_update(handles);
+guidata(hObject, handles);
+cprof_show(handles);
+
+
+% --- Executes during object creation, after setting all properties.
+function texted_numdisplayed_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to texted_numdisplayed (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

@@ -1,30 +1,49 @@
-function [  ] = cprof_show( handles )
-    for i = 1:handles.channels
-        axes(handles.(['ax_' num2str(i)]))
-        cla; hold off
-        % This function is kind of crappy but does the job
-        cprof_plotlong( handles.video{i},handles.contrast(i,:),handles.cont,handles.cropsize, handles )
-        hold on
+function [ ] = cprof_show( handles,only_limits)
+    if nargin<2
+        only_limits=false;
     end
     
-    %% Update/Use the slider
-    numframes = numel(handles.list);
-    if numframes>handles.limshow
-        
-        maxsl = numframes-handles.limshow+1;
-        set(handles.slider_main,'Max',maxsl);
-        set(handles.slider_main,'Min',1);
-        set(handles.slider_main,'SliderStep',[1, 1]/(maxsl-1));
-        
-        set(handles.slider_main,'Value',handles.current);
-        x = get(handles.slider_main,'Max')-handles.current +1;
+    numframes=numel(handles.list);
+    frame_height = size(handles.ima_long{1},1)/numframes;
+    
+    if ~only_limits
         for i = 1:handles.channels
             axes(handles.(['ax_' num2str(i)]))
-            minx = handles.size(1)*(x-1)+1;
-            maxx = minx + handles.limshow*(handles.size(1)-1);
+            cla; hold off
+            imshow(handles.ima_long{i},handles.contrast(i,:))
+            hold on
+    
+            for j = 1:numel(handles.list)
+                cont =handles.conts{j};
+                if ~isempty(cont)
+                    
+                    if ~handles.transposing
+                        cont(:,1) = cont(:,1)+frame_height*(j-1);
+                        plot(cont(:,2),cont(:,1),'yellow')
+                    else
+                        cont(:,2) = cont(:,2)+frame_height*(j-1);
+                        plot(cont(:,1),cont(:,2),'yellow')
+                    end
+                end
+            end
+        end
+        
+    end
+    limit_show = str2double(handles.texted_numdisplayed.String);
+    
+    
+    if numframes>limit_show
+        x = round(get(handles.slider_main,'Max'))-round(get(handles.slider_main,'Value'))+1;
+        
+        for i = 1:handles.channels
+            axes(handles.(['ax_' num2str(i)]))
+            minx = frame_height*(x-1)+1;
+            maxx = minx + limit_show*(frame_height-1);
             ylim([minx,maxx])
         end
     end
+
+    
     
 end
 

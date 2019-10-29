@@ -1,7 +1,9 @@
 function [bin2] = find_spindle_thresh(ima)
-    ima2 = imgaussfilt(ima,2);
+    % Percentage of the surface of the cell that  we expect the spindle to
+    % AT LEAST occupy. 
     perc = 0.10;
     
+    ima2 = imgaussfilt(ima,2);
     % Series of thresholding until you reduce to a certain proportion of
     % the image
     imanonan = ima2(ima~=0);
@@ -27,7 +29,8 @@ function [bin2] = find_spindle_thresh(ima)
     if numberOfObject >1 
         % If the objects take up a small percentage of the total, merge
         % them
-        if sum(bin2(:))/total<perc
+%         if sum(bin2(:))/total<perc
+        if false
             bin2 = bwconvhull(bin2);
         % Otherwise, keep the biggest one
         else

@@ -11,8 +11,8 @@ cla
 if handles.toggled ~= 4
     imshow(handles.video{handles.toggled}(:,:,handles.currentt),handles.im_info.contrast(handles.toggled,:))
 else
-    ima = squeeze(handles.video{handles.toggled}(:,:,handles.currentt,:));
-    imshow(ima);
+    pom_show_merge(handles);
+    
 end
 hold on
 % for ind_cell = handles.frame_list{handles.currentt}

@@ -25,8 +25,15 @@ handles.pathfile = path(1:bounds(end-2));
 % since otherwise you may change the location of the data.
 [ handles ] = pom_import( handles,0 );
 
+if handles.extra_loaded
+    handles = pom_load_extra(handles);
+end
+
 if handles.drift_applied
-    handles = pom_load_drift(handles);
+    handles.video = pom_load_drift(handles,handles.video);
+    if handles.extra_loaded
+        handles.extra = pom_load_drift(handles,handles.extra);
+    end
 end
 
 % This is just to update the slider on the right when you load the cell

@@ -12,22 +12,22 @@ function [ handles ] = cprof_init( handles,in,first_time )
     if handles.first_time
         handles.dic = in.dic;
         handles.masks = in.masks;
-        handles.list = in.currentt;
         handles.video = in.video;        
-        handles.size = size(handles.video{handles.dic});
         handles.contrast = in.contrast;
-        if numel(handles.video)==2
-            handles.channels = 2;
-        elseif numel(handles.video)>2
-            handles.channels = 3;
-        end
-
+        handles.list = in.list;
     else
         f = fields(in);
         for i = 1:numel(f)
             name = f{i};
             handles.(name) = in.(name);
         end
+    end
+    
+    handles.size = size(handles.video{handles.dic});
+    if numel(handles.video)==2
+        handles.channels = 2;
+    elseif numel(handles.video)>2
+        handles.channels = 3;
     end
     
     [handles] = cprof_update(handles);

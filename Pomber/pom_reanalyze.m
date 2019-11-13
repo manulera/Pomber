@@ -1,6 +1,7 @@
 function [handles] = pom_reanalyze(handles)
     for i =1:numel(handles.cells)
-        handles.cells{i} = handles.cells{i}.repeat(handles.im_info);
+        c = handles.cells{i};
+        c.findAllFeatures(handles.video,handles.im_info,handles.extra,1)
     end
 end
 

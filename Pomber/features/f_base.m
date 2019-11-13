@@ -1,4 +1,4 @@
-classdef f_base
+classdef f_base < handle
     %FEATURE Summary of this class goes here
     %   Detailed explanation goes here
     
@@ -13,7 +13,7 @@ classdef f_base
             obj.name = '';
         end
         
-        function obj = find(obj,c,channel,repeat,im_info)
+        function find(varargin)
             
         end
         function obj = copy(obj,i_this,other,i_other)

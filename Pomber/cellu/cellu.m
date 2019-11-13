@@ -2,35 +2,258 @@ classdef cellu < handle
     %CELLU The cell object
     
     properties
+        
         % An object [x_size,y_size,t_size] with the masks of the cell
         masks
+        
         % A list of the time frames in which the cell is present
         list
-        % Contour of the cell in the small video
-        cont
-        % Whether it is the current cell.
-        current
+        
         % You can assign several categories here
         mitmei
+        
         % features
         features
+        
         % For each channel, which kind of analysis has been done (default
         % is 1, which corresponds to none)
+        an_type
         
     end
     methods
-        
-        function self = cellu(input)
-            
+        %% Constructor and related
+        function self = cellu(masks,list,an_type)
             % Create an empty cell, which only includes the masks of the
-            % cell.
-            self.masks = input.masks;
-            self.list = input.list;
-%             ones(1,numel(handles.an_type))
+            % cell, where the cell is, and an empty array of analysis
+            % types.
+            self.masks = masks;
+            self.list = list;
+            self.an_type = an_type;
+            nb_chans = numel(an_type);
+            self.features = cell(1,nb_chans);
+            self.mitmei = 0;
+            for i = 1:numel(an_type)
+                switch an_type(i)
+                    case 3
+                        self.features{i} = f_spindle(self);
+                    case 4
+                        self.features{i} = [];
+                    case 5
+                        self.features{i} = f_dots(self);
+                end
+            end
+        end
+        
+        %% Intersection
+        
+        function update(self,other,video,im_info,extra)
+            % Make an intersection of an empty cell (self) with a
+            % pre-existing cell (other)
+            
+            % Copy the features of shared frames
+            merge = intersect(self.list,other.list);
+            for t =merge
+                i_other = find(other.list==t);
+                i_this = find(self.list==t);
+                for c =1:numel(self.features)
+                    if ~isempty(self.features{c})
+                        self.features{c} = self.features{c}.copy(i_this, other.features{c}, i_other);
+                    end
+                end
+            end
+            [~,which_frames] = setdiff(self.list,merge);
+            
+            which_i = which_frames;
+            for i = 1:numel(which_frames)
+                which_i(i) = find(which_frames(i)==self.list);
+            end
+            % Get the features of missing frames
+            self.findAllFeatures(video,im_info,extra,0,which_i);
+            
+        end
+        
+        %% Finding 
+        function findAllFeatures(self,video,im_info,extra,repeat,which_i)
+            
+            if nargin<5||isempty(repeat)
+                repeat = 0;
+            end
+            if nargin<6
+                which_i = 1:numel(self.list);
+            end
+            
+            for i = find(self.an_type>=3)
+                if isempty(self.features{i})
+                    continue;
+                end
+                % Check the empty frames here, otherwise it would not
+                % update the cell when you have only removed frames in
+                % cellu.update()
+                cut_video = video{i}(:,:,self.list);
+                cut_extra = extra{i}(:,:,self.list);
+                if ~isempty(which_i)
+                    if ~repeat
+                        self.features{i}.find(cut_video,self.masks,im_info,which_i,cut_extra)
+                    end
+                    self.displayFeature(cut_video,which_i,i,im_info,cut_extra,7);
+                end
+                self.features{i}.post_process(cut_video,self.masks);
+            end 
+            
+        end
+        %% Displaying
+    
+        function displayFeature(self,cut_video,which_i,channel,im_info,cut_extra,rows)
+                if nargin<7||isempty(rows)
+                    rows=7;
+                end
+                
+                cols = ceil(numel(which_i)/rows);
+                
+                [small_video,x_bound,y_bound,transposing] = makeSmallVideo(cut_video(:,:,which_i),self.masks(:,:,which_i),0.6);
+                small_masks = makeSmallVideo(self.masks(:,:,which_i),self.masks(:,:,which_i),0.6);                
+                [big_ima,sizes] = makeBigIma(small_video.*small_masks,rows,cols);
+                
+                %set(gcf, 'Position', get(0, 'Screensize'));
+                select = true;
+                while select
+
+                    figure('units','normalized','outerposition',[0 0 1 1])
+                    imshow(big_ima,[],'InitialMagnification','fit')
+                    title('Select the wrong spindles and click enter')
+                    hold on
+
+                    self.features{channel}.displayBigIma(which_i,rows,cols,sizes,x_bound(1),y_bound(1),transposing)
+                    [co,ro] = getpts();
+                    close
+                    select = ~isempty(co);
+                    if select
+                        
+                        alli = selectFromBigIma(ro,co,rows,cols,sizes);
+                        self.features{channel}.draw(cut_video.*self.masks,x_bound,y_bound,which_i(alli),im_info.contrast(channel,:),cut_extra);
+                    end
+                end
+        end
+        function displaySquare(self,color,t)
+            i = find(t==self.list);
+            cont = self.getContour(i);
+            plot(cont(:,2),cont(:,1),color,'LineWidth',2)
+        end
+        function displayCloseUp(self,ima,t,channel,show_ima)
+            if nargin<5
+                show_ima=true;
+            end
+            [ima,x_lims,y_lims,transposing]=makeSmallVideo(ima,any(self.masks,3),0.6);
+            i = find(t==self.list);
+            if show_ima
+                imshow(ima,[],'InitialMagnification','fit')
+                hold on
+                self.displayCloseUpContour(i,x_lims,y_lims,transposing)
+            end
+            if channel
+                if ~isempty(self.features{channel})
+                    self.features{channel}.displayCloseup(i,x_lims,y_lims,transposing)
+                end
+            end
+            
+        end
+        function displayCloseUpContour(self,i,x_lims,y_lims,transposing)
+            cont = self.getContour(i);
+            xx = cont(:,2)-x_lims(1)+1;
+            yy = cont(:,1)-y_lims(1)+1;
+            if ~transposing
+                plot(xx,yy,'LineWidth',2)
+            else
+                plot(yy,xx,'LineWidth',2)
+            end
+        end
+        
+        %% Accesory useful functions
+        function cont = getContour(self,i)
+            cont = bwboundaries(self.masks(:,:,i));
+            cont = cont{1};
+        end
+        
+        function which_i = which_frames2which_i(self,which_frames)
+            which_i = nan(1,numel(which_frames));
+            for i = 1:numel(which_frames)
+                which_i(i) = find(which_frames(i)==self.list);
+            end
+        end
+        %% Plotting the data
+        function extraplot(self,name,iscurrent,t)
+            i = find(t==self.list);
+            self.mitmei=0;
+            for c = 1:numel(self.features)
+                if ~isempty(self.features{c})
+                    self.features{c}.extraplot(name,iscurrent,i,self.mitmei+1);
+                end
+            end
+        end
+        
+        %% Functions called after the feature is found
+        
+        function correct(self,video,t,im_info,extra)
+            i = find(self.list==t);
+            for c = find(self.an_type>=3)
+                if isempty(self.features{c})
+                    continue
+                end
+                cut_video = video{c}(:,:,self.list);
+                cut_extra = extra{c}(:,:,self.list);
+                [~,x_bound,y_bound] = makeSmallVideo(cut_video,self.masks,0.6);
+                self.features{c}.draw(cut_video.*self.masks,x_bound,y_bound,i,im_info.contrast(c,:),cut_extra);
+                self.features{c}.post_process(cut_video,self.masks);
+            end
+        end
+        
+        function update_analysis(self,video)
+            for c = find(self.an_type>=3)
+                if ~isempty(self.features{c})
+                    self.features{c}.post_process(video{c}(:,:,self.list),self.masks);
+                end
+            end
+        end
+        
+        function measureIntensity(self,sum_video)
+            for c = find(self.an_type>=3)
+                if ~isempty(self.features{c})
+                    self.features{c}.measureIntensity(sum_video{c}(:,:,self.list),self.masks);
+                end
+            end
+        end
+        %% Export data
+        function export(self,handles,dir_c)
+            if ~isdir(dir_c)
+                mkdir(dir_c)
+            end
+            
+            writeTiffStack(logical(self.masks),[dir_c filesep 'mask.tiff'])
+
+            % Save data of the cell ---------------------
+
+            % A text file containing the indexes of the timepoints spanned in
+            % the video.
+            dlmwrite([dir_c filesep 'time_indexes.txt'],self.list(:))
+            real_t = handles.time(self.list(:));
+            real_t = real_t-real_t(1);
+            dlmwrite([dir_c filesep 'time_values.txt'],real_t(:))
+
+            % A file that currently only contains the info of whether it is
+            % mitosis, meiosis or whatever, but potentially could contain more info
+            pom_export_categories(self,dir_c,handles)
+            
+            for i =1:numel(self.features)
+                if ~isempty(self.features{i})
+                    name = self.features{i}.name;
+                    self.features{i}.export([dir_c filesep name],real_t,handles.im_info);
+                end
+            end
         end
         
         
         
     end
 end
+
 

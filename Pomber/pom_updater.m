@@ -6,8 +6,7 @@ function [ h ] = pom_updater( h )
         h.all_pos_names = pom_update_pos_names(h);
     end
     % Addition of the drift
-    if ~isfield(h,'drift')
-        h.drift = [];
+    if ~isfield(h,'drift_applied')
         h.drift_applied = false;
     end
     

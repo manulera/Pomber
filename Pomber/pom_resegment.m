@@ -1,16 +1,21 @@
 function [ handles ] = pom_resegment( handles )
     c = handles.cells{handles.currentcell};
-    for i = 1:numel(handles.video)
-        mini_video{i} = handles.video{i}(c.xmain,c.ymain,:,:);
-    end
-    % Change the current for the full length video
-    c.video = rotate_video(mini_video,c.xlims,c.ylims,c.angle);
-    output = CellProfile(c,0);
+    input = struct();
+    input.contrast = handles.im_info.contrast;
+    input.tlen = handles.tlen;
+    DIC = find(handles.an_type==2);
+    input.dic = DIC;
+    input.video = handles.video;
+    input.masks = c.masks;
+    input.list = c.list;
+    output = CellProfile(input,0);
+    
     if isempty(output)
         return
     end
-    newcell = cellu(output);
-    handles.cells{handles.currentcell} = newcell.update(c,handles.im_info);
+    newcell = cellu(output.masks,output.list,handles.an_type);
+    newcell.update(c,handles.video,handles.im_info,handles.extra);
+    handles.cells{handles.currentcell} = newcell;
     handles = pom_movecell(handles,0);
     [ handles ] = update_frame_list( handles );
     

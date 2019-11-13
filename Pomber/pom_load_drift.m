@@ -1,4 +1,4 @@
-function [h] = pom_load_drift(h)
+function [video] = pom_load_drift(h,video)
     
     folder = [h.pathfile filesep 'drifts'];
     
@@ -16,9 +16,13 @@ function [h] = pom_load_drift(h)
         warndlg({['No drift file for ' h.pos_name]})
         return
     end
+    
     drift = read_drift_file(target);
-    for i = 1:numel(h.video)
-        h.video{i} = apply_drift(h.video{i},drift);
+    for i = 1:numel(video)
+        if ~isempty(video{i})
+           video{i} = apply_drift(video{i},drift);
+        end
     end
-    h.drift_applied = true;
+    
+    
 end

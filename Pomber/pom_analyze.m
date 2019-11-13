@@ -22,8 +22,7 @@ for j =3:5
             dothis = ~any(handles.cells{i}.an_type==j);
 
             if dothis
-                handles.cells{i} = ...
-                pom_anany(handles.cells{i},channel,j,handles.im_info);
+                handles.cells{i}.find_feature(channel,j,handles.im_info);
             end
 
         end

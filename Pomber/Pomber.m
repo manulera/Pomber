@@ -22,7 +22,7 @@ function varargout = Pomber(varargin)
 
 % Edit the above text to modify the response to help Pomber
 
-% Last Modified by GUIDE v2.5 31-Jan-2019 17:55:36
+% Last Modified by GUIDE v2.5 06-Nov-2019 18:34:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -152,7 +152,10 @@ function tog_merge_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of tog_merge
 
-handles = pom_make_merge(handles);
+set(handles.tog_c1,'Value',0)
+set(handles.tog_c2,'Value',0)
+set(handles.tog_c3,'Value',0)
+handles.toggled=4;
 pom_show(handles)
 guidata(hObject, handles);
 
@@ -514,7 +517,9 @@ guidata(hObject, handles);
 % --- Executes on button press in butt_drift.
 function butt_drift_Callback(hObject, eventdata, handles)
 if ~handles.drift_applied
-    handles = pom_load_drift(handles);
+    handles.drift_applied=true;
+    handles.video = pom_load_drift(handles,handles.video);
+    handles.extra = pom_load_drift(handles,handles.extra);
     pom_show(handles);
 else
     warndlg('Drift already applied');
@@ -525,4 +530,21 @@ guidata(hObject, handles);
 % --- Executes on button press in butt_load_categories.
 function butt_load_categories_Callback(hObject, eventdata, handles)
 handles = pom_load_categories(handles,1);
+guidata(hObject, handles);
+
+
+% --- Executes on button press in butt_load_extra.
+function butt_load_extra_Callback(hObject, eventdata, handles)
+handles = pom_load_extra(handles);
+guidata(hObject, handles);
+
+
+% --- Executes on button press in butt_show_extra.
+function butt_show_extra_Callback(hObject, eventdata, handles)
+pom_show_extra(handles);
+
+
+% --- Executes on button press in butt_measure_int.
+function butt_measure_int_Callback(hObject, eventdata, handles)
+handles = pom_measure_intensities(handles);
 guidata(hObject, handles);

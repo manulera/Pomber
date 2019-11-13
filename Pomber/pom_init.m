@@ -16,5 +16,6 @@ set(handles.tog_c1,'Value',1)
 handles.currentt = 1;
 handles.squares = {};
 handles.version = '2.0';
+handles.extra_loaded=false;
 end
 

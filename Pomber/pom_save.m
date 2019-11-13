@@ -3,14 +3,17 @@ function [  ] = pom_save( handles )
 
 %% Create a structure containing relevant variables
 f = fields(handles);
+
 % All the variable types we dont want to store
-exclude = {'matlab.ui.Figure','matlab.ui.control.UIControl','matlab.graphics.axis.Axes','matlab.ui.Figure'};
+exclude_class = {'matlab.ui.Figure','matlab.ui.control.UIControl','matlab.graphics.axis.Axes','matlab.ui.Figure'};
+% Exclude also certain variables we dont want to store like the video and
+% the extra
+exclude_name = {'video','extra'};
+
 out = struct();
 for i = 1:numel(f)
     name = f{i};    
-    % No point in saving the video, it can be restored from the original
-    % data if its in the same place
-    if ~any(strcmp(class(handles.(name)),exclude)) && ~any(strcmp(name,{'video'}))
+    if ~any(strcmp(class(handles.(name)),exclude_class)) && ~any(strcmp(name,exclude_name))
         out.(name) = handles.(name);
     end
 end

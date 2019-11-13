@@ -15,9 +15,6 @@ if isfirst
     handles.frame_list = cell(1,handles.tlen);
     handles.an_type = ones(1,channels);
     handles.im_info.im_bg = nan(handles.tlen,channels);
-else
-    % Try to make the merge channel
-    handles = pom_make_merge(handles);
 end
 handles.ed_resolution.String = num2str(handles.im_info.resolution);
 
@@ -45,6 +42,5 @@ end
 
 handles = pom_load_categories(handles,0);
 
-fprintf('Pomber version 1.1\n')
 end
 

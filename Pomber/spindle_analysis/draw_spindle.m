@@ -1,6 +1,6 @@
-function [ spind ] = draw_spindle( ima,contrast,spind,open_figure)
+function [ spind ] = draw_spindle( ima,contrast,spind,x_bound,y_bound,open_figure)
 
-    if nargin<4
+    if nargin<6
         open_figure=true;
     end
 
@@ -9,12 +9,15 @@ function [ spind ] = draw_spindle( ima,contrast,spind,open_figure)
     end
     imshow(ima,contrast,'InitialMagnification','fit');
     hold on
-    plot(spind(:,2),spind(:,1),'cyan')
+    xlim(x_bound([1,end]))
+    ylim(y_bound([1,end]))
+    plot(spind(:,1),spind(:,2),'cyan')
+    
     [xx,yy] = getpts();
     if ~isempty(xx)
         % Transposition is a bit annoying
         x = xx; y = yy;
-        spind = [y(:) x(:)];
+        spind = [x(:) y(:)];
     end
     if open_figure
         close

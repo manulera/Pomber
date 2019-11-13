@@ -85,7 +85,7 @@ function [ raw, nb_tpoints,channels,resolution,time_out,position_name,position,s
             end
         end
         if do_max
-            raw{i} = squeeze(maximal_proj(raw{i},3));
+            raw{i} = max(raw{i},[],3);
         end
         close(barry)
     end

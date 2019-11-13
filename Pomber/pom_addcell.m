@@ -6,7 +6,6 @@ function [ handles ] = pom_addcell( handles, newcell )
         handles.frame_list{i} = [handles.frame_list{i} ind];
     end
     handles.currentcell = numel(handles.cells);
-    handles = pom_analyze(handles);
-    handles = pom_movecell(handles,0);
+
 end
 

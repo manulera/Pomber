@@ -26,9 +26,5 @@ function [handles] = pom_load_extra(handles)
         warndlg({['No extra file for ' handles.pos_name]})
     end
     
-    if handles.drift_applied
-        handles.extra = pom_load_drift(handles,handles.extra);
-    end
-    
 end
 

@@ -8,7 +8,7 @@ f = fields(handles);
 exclude_class = {'matlab.ui.Figure','matlab.ui.control.UIControl','matlab.graphics.axis.Axes','matlab.ui.Figure'};
 % Exclude also certain variables we dont want to store like the video and
 % the extra
-exclude_name = {'video','extra'};
+exclude_name = {'video','extra','sum_video'};
 
 out = struct();
 for i = 1:numel(f)

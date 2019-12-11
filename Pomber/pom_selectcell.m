@@ -34,7 +34,7 @@ if isempty(cprof_output)
     return
 end
 newcell = cellu(cprof_output.masks,cprof_output.list,handles.an_type);
-newcell.findAllFeatures(handles.video,handles.im_info,handles.extra);
+newcell.findAllFeatures(handles.video,handles.im_info,handles.extra,handles.sum_video);
 
 handles = pom_addcell( handles, newcell );
 

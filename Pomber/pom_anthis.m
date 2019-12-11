@@ -11,7 +11,7 @@ if ismember(handles.currentcell,handles.frame_list{handles.currentt})
 %         handles.cells{handles.currentcell} = handles.cells{handles.currentcell}.correct_onstack(handles.currentt,handles.im_info,stacks);
         
     else
-        handles.cells{handles.currentcell}.correct(handles.video,handles.currentt,handles.im_info,handles.extra);
+        handles.cells{handles.currentcell}.correct(handles.video,handles.currentt,handles.im_info,handles.extra,handles.sum_video);
     end
 
 %     switch handles.an_type(i)

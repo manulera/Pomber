@@ -37,7 +37,7 @@ methods
     end
     %% Correction/update
     function obj = update(obj,c,channel,im_info)
-        obj = post_process(obj,c,channel,im_info);
+        obj = postProcess(obj,c,channel,im_info);
     end
     function obj = correct_onstack(obj,c,channel,t,im_info,filename)
         contrast = im_info.contrast(channel,:);
@@ -113,7 +113,7 @@ methods
     end
     
     %% Particular
-    function obj = post_process(obj,c,channel,im_info)
+    function obj = postProcess(obj,c,channel,im_info)
         % Assign identity to the dots
         obj = obj.assign_identity();
         % Calculate distance between the dots.

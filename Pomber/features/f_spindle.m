@@ -10,6 +10,8 @@ properties
     int
     % The threshold for the spindle masks
     spindle_mask_thresh
+     
+    
     
     %% Derived properties
     % Length of the spindle
@@ -100,7 +102,17 @@ methods
             self.spind{i} = draw_spindle( ima,contrast,self.spind{i},x_bound,y_bound,0);
             x = self.spind{i}(:,1);
             y = self.spind{i}(:,2);
-            self.spindle_trace_fit(i,:)=orthogonalFit(x,y,[0,mean(x),mean(y),0],1,'robust');
+            
+            sugg_ang = atan((y(end)-y(1))/(x(end)-x(1)));
+            
+            if numel(x)==2
+                self.spindle_trace_fit(i,:) = [sugg_ang,mean(x),mean(y),0];
+                [x,y]=resamplePolylineXY(x,y);
+            else
+                [x,y]=resamplePolylineXY(x,y);
+                self.spindle_trace_fit(i,:)=orthogonalFit(x,y,[sugg_ang,mean(x),mean(y),0],1,'robust');
+            end
+            
             self.drawn(i) = true;
             [~,self.masks(:,:,i)] = intersectLineMask(x,y,cut_extra(:,:,i)>0.4);
             cla
@@ -110,7 +122,7 @@ methods
     
     %% Functions called after the feature is found
     
-    function post_process(self,cut_video,cell_masks)
+    function postProcess(self,cut_video,cell_masks)
 %         im_bg_all = im_info.im_bg(:,channel);
 
         for i = 1:numel(self.spind)
@@ -132,8 +144,10 @@ methods
             end
         end
         if true
-            self.length_fit = OLSfit(1:(numel(self.len)),self.len, @spindle_trace_fun, [5,15,25,1,1,2,10],'Robust');
+            self.length_fit = OLSfit(1:(numel(self.len)),self.len, @spindle_trace_fun, [5,15,25,1,1,5,self.len(1)],'Robust');
         end
+        
+        
     end
     function measureIntensity(self,cut_video,cell_masks)
         for i = 1:numel(self.spind)
@@ -141,22 +155,129 @@ methods
             ima = cut_video(:,:,i);
             mask = cell_masks(:,:,i);
             self.bg(i) = image_background(ima(mask));
-            ima = ima-self.bg(i);
-            
+
             % Measure the intensity on a width of 3 pixels around the
             % spindle
+            
+            total_width = 9;
+            center_line =total_width+1;
+            signal_width = 3;
+            background_width = 3;            
+            
             x = self.spind{i}(:,1);
             y = self.spind{i}(:,2);
-            [xx,yy]=makeParallelCurves(x,y,self.spindle_trace_fit(i,:),3,1);
-            ints = multipleImprofile(xx,yy,ima,'bicubic');
+            [xx,yy]=makeParallelCurves(x,y,self.spindle_trace_fit(i,:),total_width,1);
             
-            % Store the sum of the 3 pixel stacks
-            self.int{i} = sum(ints);
-            self.tot_int(i) = (sum(self.int{i}));
+            % We store the whole image profile
+            ints = multipleImprofile(xx,yy,ima,'bicubic');
+
+            self.int{i} = ints;
+            
+            signal = false(1,total_width*2+1);
+            signal(center_line-signal_width:center_line+signal_width)=true;
+            background = false(1,total_width*2+1);
+            bg1 = center_line-signal_width-1;
+            bg2 = center_line+signal_width+1;
+            background([bg1-background_width:bg1 bg2:bg2+background_width])=true;
+            
+            local_background = ints(background,:);
+            local_background = median(local_background(:));
+            
+            self.tot_int(i) = sum(sum(ints(signal,:)-local_background));
+            
         end
             
     end
-    
+%     
+%     function measureIntensity2(self,cut_video,cell_masks)
+%         for i = 1:numel(self.spind)
+%             % Background calculation and substraction
+%             ima = cut_video(:,:,i);
+%             mask = cell_masks(:,:,i);
+%             self.bg(i) = image_background(ima(mask));
+%             
+%             
+%             % Measure the intensity on a width of 3 pixels around the
+%             % spindle
+%             x = self.spind{i}(:,1);
+%             y = self.spind{i}(:,2);
+%             nb_lines = 9;
+%             center_line =nb_lines+1;
+%             [xx,yy]=makeParallelCurves(x,y,self.spindle_trace_fit(i,:),nb_lines,1);
+%             ints = multipleImprofile(xx,yy,ima,'bicubic');
+%             
+%             % Store the sum of the 3 pixel stacks
+%             
+%             signal = false(1,nb_lines*2+1);
+%             signal(center_line-3:center_line+3)=true;
+%             
+%             local_background = ints(~signal,:);
+%             local_background = median(local_background(:));
+%             
+%             self.int{i} = sum(ints(signal,:)-local_background);
+%             self.tot_int(i) = (sum(self.int{i}));
+%         end
+%             
+%     end
+%     
+%     function measureIntensity4(self,cut_video,cell_masks)
+%         for i = 1:numel(self.spind)
+%             % Background calculation and substraction
+%             ima = cut_video(:,:,i);
+%             mask = cell_masks(:,:,i);
+%             self.bg(i) = image_background(ima(mask));
+%             
+%             
+%             % Measure the intensity on a width of 3 pixels around the
+%             % spindle
+%             x = self.spind{i}(:,1);
+%             y = self.spind{i}(:,2);
+%             nb_lines = 9;
+%             center_line =nb_lines+1;
+%             [xx,yy]=makeParallelCurves(x,y,self.spindle_trace_fit(i,:),nb_lines,1);
+%             ints = multipleImprofile(xx,yy,ima,'bicubic');
+%             
+%             % Store the sum of the 3 pixel stacks
+%             signal_width = 3;
+%             signal = false(1,nb_lines*2+1);
+%             signal(center_line-signal_width:center_line+signal_width)=true;
+%             
+%             logi1 = 1:center_line-signal_width;
+%             logi2 = center_line+signal_width:size(xx,1);
+%             
+%             signal_mask=paralellCurves2Mask(xx(signal,:),yy(signal,:),size(ima));
+%             noise_mask = paralellCurves2Mask(xx(logi1,:),yy(logi1,:),size(ima));
+%             noise_mask = noise_mask| paralellCurves2Mask(xx(logi2,:),yy(logi2,:),size(ima));
+%             
+% %             figure
+% %             hold on
+% %             axis equal
+% % 
+% %             x1 = matrixPerifery(xx(signal,:));
+% %             y1 = matrixPerifery(yy(signal,:));
+% %             scatter(x1,y1)
+% % 
+% %             x1 = matrixPerifery(xx(logi1,:));
+% %             y1 = matrixPerifery(yy(logi1,:));
+% %             scatter(x1,y1)
+% % 
+% %             x1 = matrixPerifery(xx(logi2,:));
+% %             y1 = matrixPerifery(yy(logi2,:));
+% %             scatter(x1,y1)
+% %             title(num2str(sum(noise_mask)/sum(signal_mask)))
+%             
+%             
+%             local_background = ima(noise_mask);
+%             local_background = median(local_background(:));
+%             
+% %             self.int{i} = sum();
+%             self.tot_int(i) = sum(ima(signal_mask)-local_background);
+%             
+%             
+%         end
+%             
+%     end
+%     
     %% Export
     function export(self,dir_sp,time,im_info)
         res = im_info.resolution;
@@ -194,12 +315,20 @@ methods
         color = 'red';
     
         hold on
-        xx = self.spind{i}(:,1)-x_lims(1)+1;
-        yy = self.spind{i}(:,2)-y_lims(1)+1;
+        x = self.spind{i}(:,1);
+        y = self.spind{i}(:,2);
+        [xx,yy]=makeParallelCurves(x,y,self.spindle_trace_fit(i,:),3,1);
+        
+        xx = xx-x_lims(1)+1;
+        yy = yy-y_lims(1)+1;
+        
+        xx = xx([1,ceil(end/2),end],:);
+        yy = yy([1,ceil(end/2),end],:);
+        
         if ~transposing
-            plot(xx,yy,color,'LineWidth',1)
+            plot(xx',yy',color,'LineWidth',1)
         else
-            plot(yy,xx,color,'LineWidth',1)
+            plot(yy',xx',color,'LineWidth',1)
         end
         display_mask = false;
         if display_mask
@@ -211,11 +340,11 @@ methods
                     xx = cont{j}(:,2)-x_lims(1)+1;
                     yy = cont{j}(:,1)-y_lims(1)+1;
                     if ~transposing
-                        p=plot(xx,yy,'yellow','LineWidth',1);
+                        p=plot(xx,yy,'blue','LineWidth',1);
                     else
-                        p=plot(yy,xx,'yellow','LineWidth',1);
+                        p=plot(yy,xx,'blue','LineWidth',1);
                     end
-                    p.Color(4)=0.3;
+%                     p.Color(4)=0.3;
                 end
             end
         end
@@ -233,6 +362,7 @@ methods
 %         end
     end
     function extraplot(obj,name,iscurrent,tpoint,category)
+        
         switch name
         % Spindle
         case 'Spindle: length'
@@ -248,15 +378,21 @@ methods
                 extraplot_many(obj.len,iscurrent,tpoint,[],category)
             end
             
-            
         case 'Spindle: tubulin intensity profile'
             extraplot_profile(obj.int,iscurrent,tpoint)
         case 'Spindle: length vs. total intensity'
             extraplot_many(obj.tot_int,iscurrent,tpoint,obj.len,category)
+            
         case 'Spindle: length vs. ratio spindle/cell'
-            extraplot_many(obj.r_spindle,iscurrent,tpoint,obj.len,category)
+            if ~isempty(obj.length_fit)
+                tt = 1:numel(obj.len);
+                extraplot_many(obj.tot_int./obj.len,iscurrent,tpoint,tt-obj.length_fit(2),category)
+            else
+                extraplot_many(obj.tot_int./obj.len,iscurrent,tpoint,obj.len,category)
+            end
+            
         case 'Spindle: intensity background'
-            extraplot_many(obj.bg,iscurrent,tpoint,[],category)    
+            extraplot_many(obj.bg,iscurrent,tpoint,[],category)
         end
     end
     function displayBigIma(obj, which_i,rows,cols,sizes,x0,y0,transposing)

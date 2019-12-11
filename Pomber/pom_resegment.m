@@ -14,7 +14,7 @@ function [ handles ] = pom_resegment( handles )
         return
     end
     newcell = cellu(output.masks,output.list,handles.an_type);
-    newcell.update(c,handles.video,handles.im_info,handles.extra);
+    newcell.update(c,handles.video,handles.im_info,handles.extra,handles.sum_video);
     handles.cells{handles.currentcell} = newcell;
     handles = pom_movecell(handles,0);
     [ handles ] = update_frame_list( handles );

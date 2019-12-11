@@ -20,7 +20,7 @@ classdef f_base < handle
         end
         function obj = draw(obj,c,channel,im_info,which_frames)
         end
-        function obj = post_process(obj,c,channel,im_info)
+        function obj = postProcess(obj,c,channel,im_info)
         end
         %% Correction/update
         function obj = update(obj,c,channel,im_info)

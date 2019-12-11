@@ -46,7 +46,7 @@ classdef cellu < handle
         
         %% Intersection
         
-        function update(self,other,video,im_info,extra)
+        function update(self,other,video,im_info,extra,sum_video)
             % Make an intersection of an empty cell (self) with a
             % pre-existing cell (other)
             
@@ -68,17 +68,17 @@ classdef cellu < handle
                 which_i(i) = find(which_frames(i)==self.list);
             end
             % Get the features of missing frames
-            self.findAllFeatures(video,im_info,extra,0,which_i);
+            self.findAllFeatures(video,im_info,extra,sum_video,0,which_i);
             
         end
         
         %% Finding 
-        function findAllFeatures(self,video,im_info,extra,repeat,which_i)
+        function findAllFeatures(self,video,im_info,extra,sum_video,repeat,which_i)
             
-            if nargin<5||isempty(repeat)
+            if nargin<6||isempty(repeat)
                 repeat = 0;
             end
-            if nargin<6
+            if nargin<7
                 which_i = 1:numel(self.list);
             end
             
@@ -91,13 +91,15 @@ classdef cellu < handle
                 % cellu.update()
                 cut_video = video{i}(:,:,self.list);
                 cut_extra = extra{i}(:,:,self.list);
+                cut_sum =sum_video{i}(:,:,self.list);
                 if ~isempty(which_i)
                     if ~repeat
                         self.features{i}.find(cut_video,self.masks,im_info,which_i,cut_extra)
                     end
                     self.displayFeature(cut_video,which_i,i,im_info,cut_extra,7);
                 end
-                self.features{i}.post_process(cut_video,self.masks);
+                self.features{i}.postProcess(cut_video,self.masks);
+                self.features{i}.measureIntensity(cut_sum,self.masks);
             end 
             
         end
@@ -139,14 +141,14 @@ classdef cellu < handle
             cont = self.getContour(i);
             plot(cont(:,2),cont(:,1),color,'LineWidth',2)
         end
-        function displayCloseUp(self,ima,t,channel,show_ima)
-            if nargin<5
+        function displayCloseUp(self,ima,t,channel,contrast,show_ima)
+            if nargin<6
                 show_ima=true;
             end
             [ima,x_lims,y_lims,transposing]=makeSmallVideo(ima,any(self.masks,3),0.6);
             i = find(t==self.list);
             if show_ima
-                imshow(ima,[],'InitialMagnification','fit')
+                imshow(ima,contrast,'InitialMagnification','fit')
                 hold on
                 self.displayCloseUpContour(i,x_lims,y_lims,transposing)
             end
@@ -193,7 +195,7 @@ classdef cellu < handle
         
         %% Functions called after the feature is found
         
-        function correct(self,video,t,im_info,extra)
+        function correct(self,video,t,im_info,extra,sum_video)
             i = find(self.list==t);
             for c = find(self.an_type>=3)
                 if isempty(self.features{c})
@@ -201,16 +203,19 @@ classdef cellu < handle
                 end
                 cut_video = video{c}(:,:,self.list);
                 cut_extra = extra{c}(:,:,self.list);
+                cut_sum = sum_video{c}(:,:,self.list);
                 [~,x_bound,y_bound] = makeSmallVideo(cut_video,self.masks,0.6);
                 self.features{c}.draw(cut_video.*self.masks,x_bound,y_bound,i,im_info.contrast(c,:),cut_extra);
-                self.features{c}.post_process(cut_video,self.masks);
+                self.features{c}.postProcess(cut_video,self.masks);
+                self.features{c}.measureIntensity(cut_sum,self.masks);
             end
         end
         
-        function update_analysis(self,video)
+        function update_analysis(self,video,sum_video)
             for c = find(self.an_type>=3)
                 if ~isempty(self.features{c})
-                    self.features{c}.post_process(video{c}(:,:,self.list),self.masks);
+                    self.features{c}.postProcess(video{c}(:,:,self.list),self.masks);
+                    self.features{c}.measureIntensity(sum_video{c}(:,:,self.list),self.masks)
                 end
             end
         end

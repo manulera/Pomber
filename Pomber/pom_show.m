@@ -66,10 +66,10 @@ if ismember(handles.currentcell,handles.frame_list{handles.currentt})
         cla
         if j~=4
             ima = handles.video{j}(:,:,handles.currentt);
-            this_cell.displayCloseUp(ima,handles.currentt,j);
+            this_cell.displayCloseUp(ima,handles.currentt,j,handles.im_info.contrast(j,:));
         else
             merge_ima = pom_make_merge(handles);
-            this_cell.displayCloseUp(merge_ima,handles.currentt,0);
+            this_cell.displayCloseUp(merge_ima,handles.currentt,0,[]);
         end
     end
 %% Extra axis

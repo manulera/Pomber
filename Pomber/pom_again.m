@@ -4,7 +4,7 @@ function [ handles ] = pom_again( handles )
     nb_cells = numel(handles.cells) ;
     for i = 1:nb_cells
         waitbar(i/nb_cells)
-        handles.cells{i}.update_analysis(handles.video);
+        handles.cells{i}.update_analysis(handles.video,handles.sum_video);
     end
     close(barry)
 end

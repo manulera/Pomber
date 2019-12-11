@@ -519,7 +519,10 @@ function butt_drift_Callback(hObject, eventdata, handles)
 if ~handles.drift_applied
     handles.drift_applied=true;
     handles.video = pom_load_drift(handles,handles.video);
-    handles.extra = pom_load_drift(handles,handles.extra);
+    handles.sum_video = pom_load_drift(handles,handles.sum_video);
+    if handles.extra_loaded
+        handles.extra = pom_load_drift(handles,handles.extra);
+    end
     pom_show(handles);
 else
     warndlg('Drift already applied');
@@ -536,6 +539,9 @@ guidata(hObject, handles);
 % --- Executes on button press in butt_load_extra.
 function butt_load_extra_Callback(hObject, eventdata, handles)
 handles = pom_load_extra(handles);
+if handles.drift_applied
+    handles.extra = pom_load_drift(handles,handles.extra);
+end
 guidata(hObject, handles);
 
 

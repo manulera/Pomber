@@ -31,6 +31,7 @@ end
 
 if handles.drift_applied
     handles.video = pom_load_drift(handles,handles.video);
+    handles.sum_video = pom_load_drift(handles,handles.sum_video);
     if handles.extra_loaded
         handles.extra = pom_load_drift(handles,handles.extra);
     end

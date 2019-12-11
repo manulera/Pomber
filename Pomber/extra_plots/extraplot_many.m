@@ -17,7 +17,7 @@ function [  ] = extraplot_many( y,iscurrent,tpoint,x,category )
     if iscurrent
         scatter(x(tpoint),y(tpoint),'MarkerFaceColor','k','MarkerEdgeColor',cl)
     else
-        a.Color(4) = 0.2;
+        a.Color(4) = 0.5;
     end
 
 end

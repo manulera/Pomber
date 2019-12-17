@@ -2,13 +2,16 @@ function [] = extraplot_profile(y,iscurrent,tpoint,edges )
     if nargin<4
         edges = [];
     end        
+    
     if iscurrent
+        hold off
+        cla
         y = y{tpoint};
         if ~isempty(y)
-            plot(y,'LineWidth',2)
-            if numel(y)>1
-                xlim([1,numel(y)])
-            end
+            plot(y','LineWidth',2)
+%             if numel(y)>1
+%                 xlim([1,numel(y)])
+%             end
             ylim([0 inf])
         end
         

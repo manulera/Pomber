@@ -9,42 +9,28 @@ classdef f_base < handle
     
     methods
         %% Constructor and related
-        function obj = f_base()
+        function obj = f_base(c)
             obj.name = '';
         end
-        
-        function find(varargin)
-            
+        %% Finding and correcting
+        function find(self,cut_video,cell_masks,im_info,which_i,extra)
         end
-        function obj = copy(obj,i_this,other,i_other)
+        function draw(self,cut_video,x_bound,y_bound,which_i,contrast,cut_extra)
         end
-        function obj = draw(obj,c,channel,im_info,which_frames)
+         %% Functions called after the feature is found
+        function postProcess(self,cut_video,cell_masks)
         end
-        function obj = postProcess(obj,c,channel,im_info)
-        end
-        %% Correction/update
-        function obj = update(obj,c,channel,im_info)
-        end
-        function obj = correct(obj,c,channel,t,im_info) 
-        end
-        function obj = keep(obj,id_keep)
-        end
-        function obj = add_frames(obj,c,channel,im_info,add_bef,add_aft)
-        end
-        function obj = correct_onstack(obj,c,channel,time,im_info,filename)
+        function measureIntensity(self,cut_video,cell_masks)
         end
         %% Export
-        function export(obj,dir_dots,time,im_info )
+        function export(self,dir_sp,time,im_info)
         end
         %% Display
-        function display_closeup(obj,i)
+        function displayCloseup(self,i,x_lims,y_lims,transposing)
         end
         function extraplot(obj,name,iscurrent,tpoint,category)
         end
-        %% Remove some frames
-        function obj = remove_frames(obj,frames)
-            obj.f(frames) = [];
+        function displayBigIma(obj, which_i,rows,cols,sizes,x0,y0,transposing)
         end
-        
     end
 end

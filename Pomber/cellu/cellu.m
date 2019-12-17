@@ -32,12 +32,13 @@ classdef cellu < handle
             nb_chans = numel(an_type);
             self.features = cell(1,nb_chans);
             self.mitmei = 0;
-            for i = 1:numel(an_type)
+            [~,iter] = sort(an_type);
+            for i = iter                
                 switch an_type(i)
                     case 3
                         self.features{i} = f_spindle(self);
                     case 4
-                        self.features{i} = [];
+                        self.features{i} = f_ios(self);
                     case 5
                         self.features{i} = f_dots(self);
                 end
@@ -82,15 +83,22 @@ classdef cellu < handle
                 which_i = 1:numel(self.list);
             end
             
-            for i = find(self.an_type>=3)
-                if isempty(self.features{i})
+            [~,iter] = sort(self.an_type);
+            % It is important to iterate in order, since for example
+            % ios
+            for i = iter
+                if self.an_type(i)<3 || isempty(self.features{i})
                     continue;
                 end
                 % Check the empty frames here, otherwise it would not
                 % update the cell when you have only removed frames in
                 % cellu.update()
                 cut_video = video{i}(:,:,self.list);
-                cut_extra = extra{i}(:,:,self.list);
+                if ~isempty(extra{i})
+                    cut_extra = extra{i}(:,:,self.list);
+                else
+                    cut_extra = [];
+                end
                 cut_sum =sum_video{i}(:,:,self.list);
                 if ~isempty(which_i)
                     if ~repeat
@@ -122,7 +130,7 @@ classdef cellu < handle
 
                     figure('units','normalized','outerposition',[0 0 1 1])
                     imshow(big_ima,[],'InitialMagnification','fit')
-                    title('Select the wrong spindles and click enter')
+                    title('Select the wrong features and click enter')
                     hold on
 
                     self.features{channel}.displayBigIma(which_i,rows,cols,sizes,x_bound(1),y_bound(1),transposing)
@@ -185,7 +193,6 @@ classdef cellu < handle
         %% Plotting the data
         function extraplot(self,name,iscurrent,t)
             i = find(t==self.list);
-            self.mitmei=0;
             for c = 1:numel(self.features)
                 if ~isempty(self.features{c})
                     self.features{c}.extraplot(name,iscurrent,i,self.mitmei+1);
@@ -202,7 +209,11 @@ classdef cellu < handle
                     continue
                 end
                 cut_video = video{c}(:,:,self.list);
-                cut_extra = extra{c}(:,:,self.list);
+                if ~isempty(extra{c})
+                    cut_extra = extra{c}(:,:,self.list);
+                else
+                    cut_extra = [];
+                end
                 cut_sum = sum_video{c}(:,:,self.list);
                 [~,x_bound,y_bound] = makeSmallVideo(cut_video,self.masks,0.6);
                 self.features{c}.draw(cut_video.*self.masks,x_bound,y_bound,i,im_info.contrast(c,:),cut_extra);

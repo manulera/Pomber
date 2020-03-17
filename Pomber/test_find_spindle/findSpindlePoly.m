@@ -20,6 +20,16 @@ function [pars] = findSpindlePoly(ima,cell_mask,second_degree,spindle_prob)
     %% Calculating an initial guess for the fit
     if has_spindle_mask && use_spindle_mask_for_guess
         guess_mask = cell_mask.*(spindle_prob>spindle_mask_thresh);
+        if ~any(guess_mask(:))
+            % Try only twice
+            guess_mask = cell_mask.*(spindle_prob*0.8>spindle_mask_thresh);
+            if ~any(guess_mask(:))
+                guess_mask = cell_mask.*(spindle_prob*0.6>spindle_mask_thresh);
+            else
+                guess_mask = cell_mask;
+            end
+            
+        end
     else
         guess_mask = cell_mask;
     end

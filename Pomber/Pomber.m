@@ -333,8 +333,9 @@ function butt_reanalyze_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles = pom_reanalyze(handles);
-pom_show(handles)
 guidata(hObject, handles);
+pom_show(handles)
+
 
 
 % --- Executes on button press in butt_export.
@@ -510,8 +511,8 @@ pom_export4testEB1(handles);
 % --- Executes on button press in butt_change_pos.
 function butt_change_pos_Callback(hObject, eventdata, handles)
 handles = pom_change_pos(handles);
-pom_show(handles);
 guidata(hObject, handles);
+pom_show(handles);
 
 
 % --- Executes on button press in butt_drift.

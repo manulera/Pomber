@@ -101,7 +101,7 @@ classdef cellu < handle
                 end
                 cut_sum =sum_video{i}(:,:,self.list);
                 if ~isempty(which_i)
-                    if ~repeat
+                    if ~repeat||self.an_type(i)==4
                         self.features{i}.find(cut_video,self.masks,im_info,which_i,cut_extra)
                     end
                     self.displayFeature(cut_video,which_i,i,im_info,cut_extra,7);
@@ -204,7 +204,16 @@ classdef cellu < handle
         
         function correct(self,video,t,im_info,extra,sum_video)
             i = find(self.list==t);
-            for c = find(self.an_type>=3)
+            
+            % We iterate in increasing order, because the interdependent
+            % features are in order. Example: a change in f_spindle, should
+            % affect f_ios, but not viceversa.
+            
+            channel_nums = 1:numel(self.an_type);
+            [~,sort_ind] = sort(self.an_type(self.an_type>=3));
+            channel_nums=channel_nums(self.an_type>=3);
+
+            for c = channel_nums(sort_ind)
                 if isempty(self.features{c})
                     continue
                 end

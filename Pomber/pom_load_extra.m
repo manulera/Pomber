@@ -11,7 +11,10 @@ function [handles] = pom_load_extra(handles)
     end
     
     files = dir(folder);
-    regex_value = [handles.pos_name '_wave_(\d)_(.*)_extra\.tif'];
+    % The regex should match the beginning of the string, otherwise if two
+    % positions share part of the name: ex. gfp and no_gfp, both would be
+    % matched by the regex
+    regex_value = ['^' handles.pos_name '_wave_(\d)_(.*)_extra\.tif'];
     for i = 1:numel(files)
         name = files(i).name;
         [mat,tok,~]=regexp(name,regex_value,'match','tokens','tokenExtents');

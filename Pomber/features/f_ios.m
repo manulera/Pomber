@@ -28,6 +28,14 @@ classdef f_ios < f_base
         % Intensity profile (only the center)
         int_summed
 
+        % Mask of the intensity on the spindle
+        masks
+        
+        % Edges of the signal on the spindle
+        edges
+        
+        % Signal length 
+        signal_length
         
     end
     
@@ -48,6 +56,10 @@ classdef f_ios < f_base
             obj.midz_tub = zeros(1,tpoints);
             obj.bg = zeros(1,tpoints);
             obj.fit = zeros(tpoints,4);
+            obj.edges = zeros(tpoints,2);
+            obj.signal_length = zeros(1,tpoints);
+            
+            obj.masks = zeros(size(c.masks));
             
             found = 0;
             for i = 1:numel(c.features)
@@ -67,6 +79,62 @@ classdef f_ios < f_base
             end
         end
         %% Finding and correcting
+        function find(self,cut_video,cell_masks,im_info,which_i,probs) 
+            for i = which_i
+                cell_mask = cell_masks(:,:,i);
+                prob = probs(:,:,i);
+                mask = cell_mask & prob>0.6;
+                self.masks(:,:,i)=mask;
+            end
+            
+        end
+        
+        function draw(self,cut_video,x_bound,y_bound,which_i,contrast,cut_extra)
+            figure
+            
+            for i = which_i
+                ima = cut_video(:,:,i);
+                self.masks(:,:,i) = draw_ios( ima,contrast,self.masks(:,:,i),x_bound,y_bound,0);
+                cla
+            end
+            close
+        end
+        
+        
+        function postProcess(self,cut_video,cell_masks)
+            for i = 1:size(self.masks,3)
+                mask = self.masks(:,:,i);
+                
+                % Intersect the mask of the signal with the full-width
+                % spindle
+                [xx,yy]=self.spindle_feature.spindleParallelCurves(i);
+                edges_i = false(1,size(xx,2));
+                
+                for j = 1:size(xx,1)
+                    [edges_j,~] = intersectLineMask(xx(j,:),yy(j,:),mask);
+                    edges_i = edges_i|edges_j;
+                end
+                
+                % We only need the info of first and last true values (edges)
+                edges_i = find(edges_i);
+                if isempty(edges_i)
+                    edges_i = [nan nan];
+                end
+                self.edges(i,:) = edges_i([1,end]);
+                
+                % Calculate the length of the spindle comprised between the
+                % edges
+                x = self.spindle_feature.spind{i}(:,1);
+                y = self.spindle_feature.spind{i}(:,2);
+                
+                keep = edges_i(1):edges_i(end);
+                if ~isnan(keep)
+                    self.signal_length(i) = sum(sqrt(diff(x(keep)).^2+diff(y(keep)).^2));
+                else
+                    self.signal_length(i)=0;
+                end
+            end
+        end
         
          %% Functions called after the feature is found
         function measureIntensity(self,cut_video,cell_masks)
@@ -90,10 +158,15 @@ classdef f_ios < f_base
                 sugg = [max(y),numel(y)/2,5,min(y)];
                 self.fit(i,:) = OLSfit(x,y,@gaussian,sugg,'Robust');
                 
-                edges = self.getEdges(i);
-                self.midz_int(i) = sum(self.int_summed{i}(edges(1):edges(2)));
-                self.midz_tub(i) = sum(self.spindle_feature.int_summed{i}(edges(1):edges(2)));
+                keep = self.edges(i,1):self.edges(i,2);
                 
+                if ~isnan(keep)
+                    self.midz_int(i) = sum(self.int_summed{i}(keep));
+                    self.midz_tub(i) = sum(self.spindle_feature.int_summed{i}(keep));
+                else
+                    self.midz_int(i) = 0;
+                    self.midz_tub(i) = 0;
+                end
             end
         end
         %% Export
@@ -116,8 +189,12 @@ classdef f_ios < f_base
             hold on
             
             plot(x,gaussian(x,obj.fit(tpoint,:)))
-            edges = obj.getEdges(tpoint);
-            scatter(edges,gaussian(edges,obj.fit(tpoint,:)))
+            
+            edges_fit = obj.getEdges(tpoint);
+            scatter(edges_fit,gaussian(edges_fit,obj.fit(tpoint,:)))
+            
+            edges_mask = obj.edges(tpoint,:);
+            scatter(edges_mask,gaussian(edges_mask,obj.fit(tpoint,:)))
             
         case 'IOS: Spindle length vs.total intensity'
             extraplot_many(obj.midz_int,iscurrent,tpoint,obj.spindle_feature.len,category)
@@ -125,11 +202,15 @@ classdef f_ios < f_base
             extraplot_many(obj.midz_int./obj.midz_tub,iscurrent,tpoint,obj.spindle_feature.len,category)
             
         case 'IOS: intensity background'
-            extraplot_many(obj.bg,iscurrent,tpoint,[],category)
+            extraplot_many(obj.signal_length,iscurrent,tpoint,obj.spindle_feature.len,category)
         end
         end
         
         function [edges] = getEdges(self,i)
+%             x = self.spindle_feature.spind{i}(:,1);
+%             y = self.spindle_feature.spind{i}(:,1);
+%             intersectLineMask(x,y,mask)
+            
             width = 2;
             edges = [self.fit(i,2)-width*self.fit(i,3) self.fit(i,2)+width*self.fit(i,3)];
             edges = round(edges);
@@ -161,17 +242,44 @@ classdef f_ios < f_base
             end
             
             color = 'green';
-            edges = self.getEdges(i);
+            
+            
+            
+            if ~any(isnan(self.edges(i,:)))
+                xx = xx(:,self.edges(i,:));
+                yy = yy(:,self.edges(i,:));
 
-            xx = xx(:,edges);
-            yy = yy(:,edges);
-
-            if ~transposing
-                plot(xx,yy,color,'LineWidth',2)
-            else
-                plot(yy,xx,color,'LineWidth',2)
+                if ~transposing
+                    plot(xx,yy,color,'LineWidth',2)
+                else
+                    plot(yy,xx,color,'LineWidth',2)
+                end
             end
             
+        end
+        
+        function displayBigIma(self, which_i,rows,cols,sizes,x0,y0,transposing)
+            
+            for i =1:numel(which_i)
+                [ro,co] = ind2sub([rows,cols],i);
+                cor1 = sizes(2)*(co-1);
+                cor2 = sizes(1)*(ro-1);
+                t = which_i(i);
+                
+                cont = bwboundaries(self.masks(:,:,t));
+
+                
+                for j = 1:numel(cont)
+                    x = cont{j}(:,2)-x0+1;
+                    y = cont{j}(:,1)-y0+1;
+                    if ~transposing
+                        p=plot(x+cor1,y+cor2,'blue','LineWidth',1);
+                    else
+                        p=plot(y+cor1,x+cor2,'blue','LineWidth',1);
+                    end
+%                     p.Color(4)=0.3;
+                end
+            end
         end
     end
 end

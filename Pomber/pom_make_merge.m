@@ -1,4 +1,4 @@
-function [ima] = pom_make_merge(handles)
+function [ima] = pom_make_merge(this_axis,handles)
     ima=[];
     if sum(handles.an_type>2)>=2
         chan2merge = find(handles.an_type>2);
@@ -12,7 +12,7 @@ function [ima] = pom_make_merge(handles)
             cont2 = handles.im_info.contrast(c2,:);
             
             ima = squeeze(make_merge(ima1,ima2,cont1,cont2));
-            imshow(ima);
+            imshow(ima,'Parent',this_axis);
         end
     end
 end

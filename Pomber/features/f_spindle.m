@@ -121,10 +121,12 @@ methods
     
     %% Functions called after the feature is found
     
-    function postProcess(self,cut_video,cell_masks)
-%         im_bg_all = im_info.im_bg(:,channel);
+    function postProcess(self,cut_video,cell_masks,i_value)
+            if nargin<4||isempty(i_value)
+                i_value = 1:size(self.spind,3);
+            end
 
-        for i = 1:numel(self.spind)
+        for i = i_value
 
             s = self.spind{i};
             % In case you get a very small spindle, you could get its length 0
@@ -148,8 +150,12 @@ methods
         
         
     end
-    function measureIntensity(self,cut_video,cell_masks)
-        for i = 1:numel(self.spind)
+    function measureIntensity(self,cut_video,cell_masks,i_value)
+            if nargin<4||isempty(i_value)
+                i_value = 1:size(self.spind,3);
+            end
+        for i = i_value
+
             % Background calculation and substraction
             ima = cut_video(:,:,i);
             mask = cell_masks(:,:,i);
@@ -213,9 +219,9 @@ methods
         
     end
     
-    function displayCloseup(self,i,x_lims,y_lims,transposing)
+    function displayCloseup(self,this_axis,i,x_lims,y_lims,transposing)
         color = 'red';
-        hold on
+        hold(this_axis,'on');
         [xx,yy]=self.spindleParallelCurves(i);
         xx = xx-x_lims(1)+1;
         yy = yy-y_lims(1)+1;
@@ -224,9 +230,9 @@ methods
         yy = yy([1,ceil(end/2),end],:);
         
         if ~transposing
-            plot(xx',yy',color,'LineWidth',1)
+            plot(this_axis,xx',yy',color,'LineWidth',1)
         else
-            plot(yy',xx',color,'LineWidth',1)
+            plot(this_axis,yy',xx',color,'LineWidth',1)
         end
         
         display_mask = false;
@@ -239,9 +245,9 @@ methods
                     xx = cont{j}(:,2)-x_lims(1)+1;
                     yy = cont{j}(:,1)-y_lims(1)+1;
                     if ~transposing
-                        p=plot(xx,yy,'blue','LineWidth',1);
+                        p=plot(this_axis,xx,yy,'blue','LineWidth',1);
                     else
-                        p=plot(yy,xx,'blue','LineWidth',1);
+                        p=plot(this_axis,yy,xx,'blue','LineWidth',1);
                     end
 %                     p.Color(4)=0.3;
                 end
@@ -249,7 +255,7 @@ methods
         end
 
     end
-    function extraplot(obj,name,iscurrent,tpoint,category)
+    function extraplot(obj,this_axis,name,iscurrent,tpoint,category)
         
         switch name
         % Spindle
@@ -257,12 +263,12 @@ methods
             if ~isempty(obj.length_fit)
                 
                 tt = 1:numel(obj.len);
-                extraplot_many(obj.len,iscurrent,tpoint,tt-obj.length_fit(2),category)
+                extraplot_many(this_axis,obj.len,iscurrent,tpoint,tt-obj.length_fit(2),category)
                 if iscurrent
-                    plot(tt-obj.length_fit(2),spindle_trace_fun(tt,obj.length_fit),'.-k')
+                    plot(this_axis,tt-obj.length_fit(2),spindle_trace_fun(tt,obj.length_fit),'.-k')
                 end
             else
-                extraplot_many(obj.len,iscurrent,tpoint,[],category)
+                extraplot_many(this_axis,obj.len,iscurrent,tpoint,[],category)
             end
             
         case 'Spindle: tubulin intensity profile'
@@ -270,21 +276,21 @@ methods
                 return
             end
             int_curve = multiple2SingleImprofile(obj.int{tpoint},defaultSpindleParameters());
-            extraplot_profile({int_curve},iscurrent,1)
+            extraplot_profile(this_axis,{int_curve},iscurrent,1)
             
         case 'Spindle: length vs. total intensity'
-            extraplot_many(obj.tot_int,iscurrent,tpoint,obj.len,category)
+            extraplot_many(this_axis,obj.tot_int,iscurrent,tpoint,obj.len,category)
             
         case 'Spindle: length vs. ratio spindle/cell'
             if ~isempty(obj.length_fit)
                 tt = 1:numel(obj.len);
-                extraplot_many(obj.tot_int./obj.len,iscurrent,tpoint,tt-obj.length_fit(2),category)
+                extraplot_many(this_axis,obj.tot_int./obj.len,iscurrent,tpoint,tt-obj.length_fit(2),category)
             else
-                extraplot_many(obj.tot_int./obj.len,iscurrent,tpoint,obj.len,category)
+                extraplot_many(this_axis,obj.tot_int./obj.len,iscurrent,tpoint,obj.len,category)
             end
             
         case 'Spindle: intensity background'
-            extraplot_many(obj.bg,iscurrent,tpoint,[],category)
+            extraplot_many(this_axis,obj.bg,iscurrent,tpoint,[],category)
         end
     end
     function displayBigIma(obj, which_i,rows,cols,sizes,x0,y0,transposing)

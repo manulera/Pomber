@@ -1,26 +1,25 @@
-function [] = extraplot_profile(y,iscurrent,tpoint,edges )
-    if nargin<4
+function [] = extraplot_profile(this_axis,y,iscurrent,tpoint,edges )
+    if nargin<5
         edges = [];
     end        
     
     if iscurrent
-        hold off
-        cla
+        
         y = y{tpoint};
         if ~isempty(y)
-            plot(y','LineWidth',2)
+            plot(this_axis,y','LineWidth',2)
 %             if numel(y)>1
 %                 xlim([1,numel(y)])
 %             end
-            ylim([0 inf])
+            ylim(this_axis,[0 inf])
         end
         
         if ~isempty(edges)
             edges = edges(:,tpoint);
-            hold on
+            hold(this_axis,'on');
             for j = 1:2
                 if ~isnan(edges(j))
-                    scatter(edges(j),y(edges(j)),'red')
+                    scatter(this_axis,edges(j),y(edges(j)),'red')
                 end
             end
         end        

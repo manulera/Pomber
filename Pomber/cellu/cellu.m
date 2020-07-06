@@ -149,32 +149,35 @@ classdef cellu < handle
             cont = self.getContour(i);
             plot(cont(:,2),cont(:,1),color,'LineWidth',2)
         end
-        function displayCloseUp(self,ima,t,channel,contrast,show_ima)
-            if nargin<6
+        function displayCloseUp(self,this_axis,ima,t,channel,contrast,rp,show_ima)
+            if nargin<7
+                rp = [];
+            end
+            if nargin<8
                 show_ima=true;
             end
-            [ima,x_lims,y_lims,transposing]=makeSmallVideo(ima,any(self.masks,3),0.6);
+            [ima,x_lims,y_lims,transposing]=makeSmallVideo(ima,any(self.masks,3),0.6,rp);
             i = find(t==self.list);
             if show_ima
-                imshow(ima,contrast,'InitialMagnification','fit')
-                hold on
-                self.displayCloseUpContour(i,x_lims,y_lims,transposing)
+                imshow(ima,contrast,'InitialMagnification','fit','Parent',this_axis)
+                hold(this_axis,'on');
+                self.displayCloseUpContour(this_axis,i,x_lims,y_lims,transposing)
             end
             if channel
                 if ~isempty(self.features{channel})
-                    self.features{channel}.displayCloseup(i,x_lims,y_lims,transposing)
+                    self.features{channel}.displayCloseup(this_axis,i,x_lims,y_lims,transposing)
                 end
             end
             
         end
-        function displayCloseUpContour(self,i,x_lims,y_lims,transposing)
+        function displayCloseUpContour(self,this_axis,i,x_lims,y_lims,transposing)
             cont = self.getContour(i);
             xx = cont(:,2)-x_lims(1)+1;
             yy = cont(:,1)-y_lims(1)+1;
             if ~transposing
-                plot(xx,yy,'LineWidth',2)
+                plot(this_axis,xx,yy,'LineWidth',2)
             else
-                plot(yy,xx,'LineWidth',2)
+                plot(this_axis,yy,xx,'LineWidth',2)
             end
         end
         
@@ -191,11 +194,11 @@ classdef cellu < handle
             end
         end
         %% Plotting the data
-        function extraplot(self,name,iscurrent,t)
+        function extraplot(self,this_axis,name,iscurrent,t)
             i = find(t==self.list);
             for c = 1:numel(self.features)
                 if ~isempty(self.features{c})
-                    self.features{c}.extraplot(name,iscurrent,i,self.mitmei+1);
+                    self.features{c}.extraplot(this_axis,name,iscurrent,i,self.mitmei+1);
                 end
             end
         end
@@ -226,8 +229,8 @@ classdef cellu < handle
                 cut_sum = sum_video{c}(:,:,self.list);
                 [~,x_bound,y_bound] = makeSmallVideo(cut_video,self.masks,0.6);
                 self.features{c}.draw(cut_video.*self.masks,x_bound,y_bound,i,im_info.contrast(c,:),cut_extra);
-                self.features{c}.postProcess(cut_video,self.masks);
-                self.features{c}.measureIntensity(cut_sum,self.masks);
+                self.features{c}.postProcess(cut_video,self.masks,i);
+                self.features{c}.measureIntensity(cut_sum,self.masks,i);
             end
         end
         

@@ -5,16 +5,20 @@ function [] = pom_show( handles )
 % Show the frame for t=handles.currentt, z=handles.currentz
 
 %% Main axes
-axes(handles.ax_main)
-hold off
-cla
+if ~(handles.tog_fastscroll.Value)
+    axes(handles.ax_main)
+end
+this_axis = handles.ax_main;
+cla(this_axis);
+hold(this_axis,'off');
+
 if handles.toggled ~= 4
-    imshow(handles.video{handles.toggled}(:,:,handles.currentt),handles.im_info.contrast(handles.toggled,:))
+    imshow(handles.video{handles.toggled}(:,:,handles.currentt),handles.im_info.contrast(handles.toggled,:),'Parent',this_axis)
 else
-    pom_show_merge(handles);
+    pom_show_merge(this_axis,handles);
     
 end
-hold on
+hold(this_axis,'on');
 % for ind_cell = handles.frame_list{handles.currentt}
 %     handles.cells{ind_cell}.display_square('red');
 % end
@@ -61,15 +65,15 @@ if ismember(handles.currentcell,handles.frame_list{handles.currentt})
     end
     
     for j = 1:channels2show
-        axes(handles.(['ax_closeup' num2str(j)]))
-        hold off
-        cla
+        this_axis = handles.(['ax_closeup' num2str(j)]);
+        hold(this_axis,'off');
+        cla(this_axis);
         if j~=4
             ima = handles.video{j}(:,:,handles.currentt);
-            this_cell.displayCloseUp(ima,handles.currentt,j,handles.im_info.contrast(j,:));
+            this_cell.displayCloseUp(this_axis,ima,handles.currentt,j,handles.im_info.contrast(j,:),handles.current_cell_rp);
         else
-            merge_ima = pom_make_merge(handles);
-            this_cell.displayCloseUp(merge_ima,handles.currentt,0,[]);
+            merge_ima = pom_make_merge(this_axis,handles);
+            this_cell.displayCloseUp(this_axis,merge_ima,handles.currentt,0,[],handles.current_cell_rp);
         end
     end
 %% Extra axis
@@ -78,12 +82,15 @@ if ismember(handles.currentcell,handles.frame_list{handles.currentt})
         ii = handles.(['pop_ex' num2str(ax)]).Value;
         name = handles.(['pop_ex' num2str(ax)]).String{ii};
         if ii>1
-            axes(handles.(['ax_extra' num2str(ax)]))
-            reset(gca);cla;hold off
+            this_axis = handles.(['ax_extra' num2str(ax)]);
+            reset(this_axis);
+            cla(this_axis);
+            hold(this_axis,'off');
             for i = 1:numel(handles.cells)
-                pom_extraplot(handles.cells{i},name,i==handles.currentcell,handles.currentt)
+                pom_extraplot(handles.cells{i},name,i==handles.currentcell,handles.currentt,this_axis)
             end
         end
+        
     end
 
 end

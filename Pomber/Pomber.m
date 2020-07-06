@@ -222,12 +222,11 @@ function butt_load_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 [ handles ] = pom_load(handles);
+guidata(hObject, handles);
 % In case there was no loading
 if isfield(handles,'video')
     pom_show(handles)
 end
-
-guidata(hObject, handles);
 
 
 % --- Executes on button press in butt_resegment.
@@ -494,7 +493,7 @@ function tog_fastscroll_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of tog_fastscroll
-
+axes(handles.ax_main)
 
 % --- Executes on button press in butt_stack.
 function butt_stack_Callback(hObject, eventdata, handles)

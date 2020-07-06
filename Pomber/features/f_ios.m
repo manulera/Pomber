@@ -101,8 +101,12 @@ classdef f_ios < f_base
         end
         
         
-        function postProcess(self,cut_video,cell_masks)
-            for i = 1:size(self.masks,3)
+        function postProcess(self,cut_video,cell_masks,i_value)
+            if nargin<4||isempty(i_value)
+                i_value = 1:size(self.masks,3);
+            end
+                
+            for i = i_value
                 mask = self.masks(:,:,i);
                 
                 % Intersect the mask of the signal with the full-width
@@ -137,9 +141,13 @@ classdef f_ios < f_base
         end
         
          %% Functions called after the feature is found
-        function measureIntensity(self,cut_video,cell_masks)
+        function measureIntensity(self,cut_video,cell_masks,i_value)
             
-            for i = 1:numel(self.spindle_feature.spind)
+            if nargin<4||isempty(i_value)
+                i_value = 1:numel(self.spindle_feature.spind);
+            end
+                
+            for i = i_value
                 
                 % Background calculation and substraction
                 ima = cut_video(:,:,i);
@@ -173,7 +181,7 @@ classdef f_ios < f_base
         function export(self,dir_sp,time,im_info)
         end
         %% Display
-        function extraplot(obj,name,iscurrent,tpoint,category)
+        function extraplot(obj,this_axis,name,iscurrent,tpoint,category)
         
         switch name
         % Spindle
@@ -183,26 +191,26 @@ classdef f_ios < f_base
             end
             
             int_curve = multiple2SingleImprofile(obj.int{tpoint},defaultSpindleParameters());
-            extraplot_profile({int_curve},iscurrent,1)
+            extraplot_profile(this_axis,{int_curve},iscurrent,1)
             
             x = 1:numel(int_curve);
             hold on
             
-            plot(x,gaussian(x,obj.fit(tpoint,:)))
+            plot(this_axis,x,gaussian(x,obj.fit(tpoint,:)))
             
             edges_fit = obj.getEdges(tpoint);
-            scatter(edges_fit,gaussian(edges_fit,obj.fit(tpoint,:)))
+            scatter(this_axis,edges_fit,gaussian(edges_fit,obj.fit(tpoint,:)))
             
             edges_mask = obj.edges(tpoint,:);
-            scatter(edges_mask,gaussian(edges_mask,obj.fit(tpoint,:)))
+            scatter(this_axis,edges_mask,gaussian(edges_mask,obj.fit(tpoint,:)))
             
         case 'IOS: Spindle length vs.total intensity'
-            extraplot_many(obj.midz_int,iscurrent,tpoint,obj.spindle_feature.len,category)
+            extraplot_many(this_axis,obj.midz_int,iscurrent,tpoint,obj.spindle_feature.len,category)
         case 'IOS: Spindle length vs. ratio spindle/cell'
-            extraplot_many(obj.midz_int./obj.midz_tub,iscurrent,tpoint,obj.spindle_feature.len,category)
+            extraplot_many(this_axis,obj.midz_int./obj.midz_tub,iscurrent,tpoint,obj.spindle_feature.len,category)
             
         case 'IOS: intensity background'
-            extraplot_many(obj.signal_length,iscurrent,tpoint,obj.spindle_feature.len,category)
+            extraplot_many(this_axis,obj.signal_length,iscurrent,tpoint,[],category)
         end
         end
         
@@ -224,7 +232,7 @@ classdef f_ios < f_base
             end
         end
         
-        function displayCloseup(self,i,x_lims,y_lims,transposing)
+        function displayCloseup(self,this_axis,i,x_lims,y_lims,transposing)
 
             hold on
             [xx,yy]=self.spindle_feature.spindleParallelCurves(i);
@@ -236,9 +244,9 @@ classdef f_ios < f_base
             yy = yy([1,end],:);
 
             if ~transposing
-                plot(xx',yy',color,'LineWidth',2)
+                plot(this_axis,xx',yy',color,'LineWidth',2)
             else
-                plot(yy',xx',color,'LineWidth',2)
+                plot(this_axis,yy',xx',color,'LineWidth',2)
             end
             
             color = 'green';
@@ -250,9 +258,9 @@ classdef f_ios < f_base
                 yy = yy(:,self.edges(i,:));
 
                 if ~transposing
-                    plot(xx,yy,color,'LineWidth',2)
+                    plot(this_axis,xx,yy,color,'LineWidth',2)
                 else
-                    plot(yy,xx,color,'LineWidth',2)
+                    plot(this_axis,yy,xx,color,'LineWidth',2)
                 end
             end
             

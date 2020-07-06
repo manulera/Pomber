@@ -1,10 +1,11 @@
-function [x_box,y_box] = expandBoundingBox(mask,box_expansion)
+function [x_box,y_box] = expandBoundingBox(mask,box_expansion,rp)
     
     % Using region props, take the bounding box and expand it by
     % box_expansion/2 times the x and y size of the box in those
     % directions.
-    
-    rp = regionprops(mask);
+    if nargin<3||isempty(rp)
+        rp = regionprops(mask,{'Centroid','BoundingBox'});
+    end
     
     x_min = round(rp.Centroid(1)-rp.BoundingBox(3)*box_expansion);
     x_max = round(rp.Centroid(1)+rp.BoundingBox(3)*box_expansion);

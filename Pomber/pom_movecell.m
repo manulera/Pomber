@@ -32,5 +32,9 @@ function [ handles ] = pom_movecell( handles,move )
     set(handles.slider_cell,'Min',1);
     set(handles.slider_cell,'Value',1);
     set(handles.slider_cell,'SliderStep',[1, 1]/(tot-1));
+    
+    % This seems to be a very slow step, so better do it in advance
+    mask = any(handles.cells{handles.currentcell}.masks,3);
+    handles.current_cell_rp = regionprops(mask,{'Centroid','BoundingBox'});
 end
 

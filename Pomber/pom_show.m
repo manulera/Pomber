@@ -5,9 +5,6 @@ function [] = pom_show( handles )
 % Show the frame for t=handles.currentt, z=handles.currentz
 
 %% Main axes
-if ~(handles.tog_fastscroll.Value)
-    axes(handles.ax_main)
-end
 this_axis = handles.ax_main;
 cla(this_axis);
 hold(this_axis,'off');
@@ -19,12 +16,10 @@ else
     
 end
 hold(this_axis,'on');
-% for ind_cell = handles.frame_list{handles.currentt}
-%     handles.cells{ind_cell}.display_square('red');
-% end
+
 for i =1:numel(handles.cells)
     if ismember(i,handles.frame_list{handles.currentt})
-        handles.cells{i}.displaySquare('red',handles.currentt);
+        handles.cells{i}.displaySquare(this_axis,'red',handles.currentt,handles.small_video.contours);
     end
 end
 
@@ -53,7 +48,7 @@ end
 % Check at the end rather than checking in iteration
 if ismember(handles.currentcell,handles.frame_list{handles.currentt})
     this_cell = handles.cells{handles.currentcell};
-    this_cell.displaySquare('green',handles.currentt);
+    this_cell.displaySquare(this_axis,'green',handles.currentt,handles.small_video.contours);
 %% Closeup axes    
     % Now update the close up
     % 1 when there is only one fluo, 2 when there is merge
@@ -69,11 +64,11 @@ if ismember(handles.currentcell,handles.frame_list{handles.currentt})
         hold(this_axis,'off');
         cla(this_axis);
         if j~=4
-            ima = handles.video{j}(:,:,handles.currentt);
-            this_cell.displayCloseUp(this_axis,ima,handles.currentt,j,handles.im_info.contrast(j,:),handles.current_cell_rp);
+%             ima = handles.video{j}(:,:,handles.currentt);
+            this_cell.displayCloseUp(this_axis,handles.small_video,handles.currentt,j,handles.im_info.contrast(j,:));
         else
-            merge_ima = pom_make_merge(this_axis,handles);
-            this_cell.displayCloseUp(this_axis,merge_ima,handles.currentt,0,[],handles.current_cell_rp);
+            
+            this_cell.displayCloseUp(this_axis,handles.small_video,handles.currentt,4,[]);
         end
     end
 %% Extra axis

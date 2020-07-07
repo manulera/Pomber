@@ -144,34 +144,44 @@ classdef cellu < handle
                     end
                 end
         end
-        function displaySquare(self,color,t)
+        function displaySquare(self,this_axis,color,t,contours)
             i = find(t==self.list);
-            cont = self.getContour(i);
-            plot(cont(:,2),cont(:,1),color,'LineWidth',2)
+            cont = contours{i};
+            plot(this_axis,cont(:,2),cont(:,1),color,'LineWidth',2)
         end
-        function displayCloseUp(self,this_axis,ima,t,channel,contrast,rp,show_ima)
-            if nargin<7
-                rp = [];
+        
+        function small_video = makeSmallVideo(self,video)
+            nb_channels = numel(video);
+            small_video = struct();
+            small_video.video = cell([1,nb_channels]);
+            
+            for i = 1:nb_channels
+                this_channel = video{i}(:,:,self.list);
+                [small_video.video{i},small_video.x_lims,small_video.y_lims,small_video.transposing] = makeSmallVideo(this_channel,any(self.masks,3),0.6);
             end
-            if nargin<8
-                show_ima=true;
-            end
-            [ima,x_lims,y_lims,transposing]=makeSmallVideo(ima,any(self.masks,3),0.6,rp);
-            i = find(t==self.list);
-            if show_ima
-                imshow(ima,contrast,'InitialMagnification','fit','Parent',this_axis)
-                hold(this_axis,'on');
-                self.displayCloseUpContour(this_axis,i,x_lims,y_lims,transposing)
-            end
-            if channel
-                if ~isempty(self.features{channel})
-                    self.features{channel}.displayCloseup(this_axis,i,x_lims,y_lims,transposing)
-                end
+            small_video.contours = cell([1,numel(self.list)]);
+            for i = 1:numel(self.list)
+                small_video.contours{i} = self.getContour(i);
             end
             
         end
-        function displayCloseUpContour(self,this_axis,i,x_lims,y_lims,transposing)
-            cont = self.getContour(i);
+        
+        function displayCloseUp(self,this_axis,small_video,t,channel,contrast)
+            
+            i = find(t==self.list);
+            
+            % Load from the small video previously generated
+            ima = squeeze(small_video.video{channel}(:,:,i,:));
+            x_lims = small_video.x_lims;
+            y_lims = small_video.y_lims;
+            cont  = small_video.contours{i};
+            transposing = small_video.transposing;
+            
+            % Show the image
+            imshow(ima,contrast,'InitialMagnification','fit','Parent',this_axis)
+            
+            % Plot the cell contour
+            hold(this_axis,'on');
             xx = cont(:,2)-x_lims(1)+1;
             yy = cont(:,1)-y_lims(1)+1;
             if ~transposing
@@ -179,7 +189,16 @@ classdef cellu < handle
             else
                 plot(this_axis,yy,xx,'LineWidth',2)
             end
+            
+            % Plot the features
+            if channel~=4
+                if ~isempty(self.features{channel})
+                    self.features{channel}.displayCloseup(this_axis,i,x_lims,y_lims,transposing)
+                end
+            end
+            
         end
+        
         
         %% Accesory useful functions
         function cont = getContour(self,i)

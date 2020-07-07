@@ -84,7 +84,7 @@ methods
             cell_mask = cell_masks(:,:,i);
             spindle_prob = spindle_probs(:,:,i);
             [fit_par] = findSpindlePoly( ima ,cell_mask,second_degree,spindle_prob);
-            [x,y,mask] = cutSpindlePoly(cell_mask.*spindle_prob,fit_par,0.4);
+            [x,y,mask] = cutSpindlePoly(cell_mask.*spindle_prob,fit_par,0.6);
             self.spindle_trace_fit(i,:) = fit_par;
             self.spind{i}=[x(:) y(:)];
             self.masks(:,:,i)=mask;

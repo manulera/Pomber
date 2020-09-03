@@ -19,7 +19,7 @@ hold(this_axis,'on');
 
 for i =1:numel(handles.cells)
     if ismember(i,handles.frame_list{handles.currentt})
-        handles.cells{i}.displaySquare(this_axis,'red',handles.currentt,handles.small_video.contours);
+        handles.cells{i}.displaySquare(this_axis,'red',handles.currentt);
     end
 end
 
@@ -48,7 +48,7 @@ end
 % Check at the end rather than checking in iteration
 if ismember(handles.currentcell,handles.frame_list{handles.currentt})
     this_cell = handles.cells{handles.currentcell};
-    this_cell.displaySquare(this_axis,'green',handles.currentt,handles.small_video.contours);
+    this_cell.displaySquare(this_axis,'green',handles.currentt);
 %% Closeup axes    
     % Now update the close up
     % 1 when there is only one fluo, 2 when there is merge

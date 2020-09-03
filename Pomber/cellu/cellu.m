@@ -144,9 +144,9 @@ classdef cellu < handle
                     end
                 end
         end
-        function displaySquare(self,this_axis,color,t,contours)
+        function displaySquare(self,this_axis,color,t)
             i = find(t==self.list);
-            cont = contours{i};
+            cont = self.getContour(i);
             plot(this_axis,cont(:,2),cont(:,1),color,'LineWidth',2)
         end
         

@@ -33,12 +33,14 @@ function [ handles ] = pom_movecell( handles,move )
     set(handles.slider_cell,'Value',1);
     set(handles.slider_cell,'SliderStep',[1, 1]/(tot-1));
     
-    % This seems to be a very slow step, so better do it in advance
+    % These seem to be very slow steps, so better do it in advance
     handles.small_video = handles.cells{handles.currentcell}.makeSmallVideo(handles.video);
     
     if numel(handles.small_video.video)==3
         nb_tpoints = numel(handles.cells{handles.currentcell}.list);
         handles.small_video.video{4} = pom_make_merge(handles,1:nb_tpoints,handles.small_video.video);
     end
+    
+    
 end
 

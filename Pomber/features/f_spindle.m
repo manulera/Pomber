@@ -123,7 +123,7 @@ methods
     
     function postProcess(self,cut_video,cell_masks,i_value)
             if nargin<4||isempty(i_value)
-                i_value = 1:size(self.spind,3);
+                i_value = 1:numel(self.spind);
             end
 
         for i = i_value
@@ -152,7 +152,7 @@ methods
     end
     function measureIntensity(self,cut_video,cell_masks,i_value)
             if nargin<4||isempty(i_value)
-                i_value = 1:size(self.spind,3);
+                i_value = 1:numel(self.spind);
             end
         for i = i_value
 
@@ -263,9 +263,11 @@ methods
             if ~isempty(obj.length_fit)
                 
                 tt = 1:numel(obj.len);
-                extraplot_many(this_axis,obj.len,iscurrent,tpoint,tt-obj.length_fit(2),category)
+%                 extraplot_many(this_axis,obj.len,iscurrent,tpoint,tt-obj.length_fit(2),category)
+                extraplot_many(this_axis,obj.len,iscurrent,tpoint,tt,category)
                 if iscurrent
-                    plot(this_axis,tt-obj.length_fit(2),spindle_trace_fun(tt,obj.length_fit),'.-k')
+%                     plot(this_axis,tt-obj.length_fit(2),spindle_trace_fun(tt,obj.length_fit),'.-k')
+                    plot(this_axis,tt,spindle_trace_fun(tt,obj.length_fit),'.-k')
                 end
             else
                 extraplot_many(this_axis,obj.len,iscurrent,tpoint,[],category)

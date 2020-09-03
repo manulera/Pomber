@@ -194,7 +194,7 @@ classdef f_ios < f_base
             extraplot_profile(this_axis,{int_curve},iscurrent,1)
             
             x = 1:numel(int_curve);
-            hold on
+            hold(this_axis,'on')
             
             plot(this_axis,x,gaussian(x,obj.fit(tpoint,:)))
             

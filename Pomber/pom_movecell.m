@@ -23,6 +23,7 @@ function [ handles ] = pom_movecell( handles,move )
     wrapN = @(x) (1 + mod(x-1, numel(handles.cells)));
     handles.currentcell = wrapN(handles.currentcell+move);
     % Switch the video to the current position 
+    handles.currentcell
     handles.currentt = handles.cells{handles.currentcell}.list(1);
     set(handles.slider_t,'Value',handles.currentt);
     % Update the cell slider

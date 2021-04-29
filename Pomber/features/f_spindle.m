@@ -24,7 +24,7 @@ properties
     tot_int
     % Backgound value for each image
     bg
-    % Fit of function to the spindle
+    % Fit of function to the spindle (t1,t2,t3 -unused-,s1,s2,s3,offset)
     length_fit
     % Spindle masks
     masks
@@ -88,9 +88,11 @@ methods
             self.spindle_trace_fit(i,:) = fit_par;
             self.spind{i}=[x(:) y(:)];
             self.masks(:,:,i)=mask;
-            
+
             if ~isnan(im_info.resolution)
-                second_degree = numel(x)*im_info.resolution > 6;
+                the_length = sum(sqrt(sum(diff(self.spind{i}).^2,2)));
+                the_length*im_info.resolution
+                second_degree = the_length*im_info.resolution > 6;
             end
         end
     end
@@ -263,11 +265,11 @@ methods
             if ~isempty(obj.length_fit)
                 
                 tt = 1:numel(obj.len);
-%                 extraplot_many(this_axis,obj.len,iscurrent,tpoint,tt-obj.length_fit(2),category)
-                extraplot_many(this_axis,obj.len,iscurrent,tpoint,tt,category)
+                extraplot_many(this_axis,obj.len,iscurrent,tpoint,tt-obj.length_fit(2),category)
+%                 extraplot_many(this_axis,obj.len,iscurrent,tpoint,tt,category)
                 if iscurrent
-%                     plot(this_axis,tt-obj.length_fit(2),spindle_trace_fun(tt,obj.length_fit),'.-k')
-                    plot(this_axis,tt,spindle_trace_fun(tt,obj.length_fit),'.-k')
+                    plot(this_axis,tt-obj.length_fit(2),spindle_trace_fun(tt,obj.length_fit),'.-k')
+%                     plot(this_axis,tt,spindle_trace_fun(tt,obj.length_fit),'.-k')
                 end
             else
                 extraplot_many(this_axis,obj.len,iscurrent,tpoint,[],category)

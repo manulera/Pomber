@@ -56,8 +56,29 @@ for i = background
     plot(xx(i,:),yy(i,:),'magenta','LineWidth',2)
 end
 
+%%
+
+ios_feature = this_cell.features{2};
+
+ima2 = handles.video{2}(:,:,time_point_movie);
+
+figure
+imshow(ima2,[100,180])
+hold on
+xlim([box(1),box(1)+box(3)])
+ylim([box(2),box(2)+box(4)])
+plot(cont(:,2),cont(:,1),'y','LineWidth',2)
 
 
+this_edge = ios_feature.edges(time_point_cell,:);
 
+plot(x(this_edge),y(this_edge),'blue','LineWidth',2)
 
+for i = signal([1,end])
+    plot(xx(i,this_edge),yy(i,this_edge),'g','LineWidth',2)
+end
 
+for i = background
+    plot(xx(i,this_edge),yy(i,this_edge),'magenta','LineWidth',2)
+end
+get(gca,'Position')

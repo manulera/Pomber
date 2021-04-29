@@ -13,7 +13,10 @@ function [x,y,keep_mask] = cutSpindlePoly(spindle_prob,pars,spindle_mask_thresh)
     mask = spindle_prob>spindle_mask_thresh;
     
     [keep_polygon,keep_mask] = intersectLineMask(x,y,mask);
-
+    
+    
+    keep = find(keep_polygon);
+    keep_polygon = keep(1):keep(end);
     x = x(keep_polygon);
     y = y(keep_polygon);
     %% Plot the result
@@ -28,7 +31,7 @@ function [x,y,keep_mask] = cutSpindlePoly(spindle_prob,pars,spindle_mask_thresh)
 %     hold on
 %     plot(x,y)
 %     scatter(pars(2),pars(3))
-%     pause(0.5)
+%     pause(0.3)
 
 end
 

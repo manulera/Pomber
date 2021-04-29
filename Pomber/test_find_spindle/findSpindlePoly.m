@@ -22,7 +22,8 @@ function [pars] = findSpindlePoly(ima,cell_mask,second_degree,spindle_prob)
         guess_mask = cell_mask.*(spindle_prob>spindle_mask_thresh);
         if ~any(guess_mask(:))
             % Try only twice
-            guess_mask = cell_mask.*(spindle_prob*0.8>spindle_mask_thresh);
+            % TODO: This should be a parameter
+            guess_mask = cell_mask.*(spindle_prob*0.6>spindle_mask_thresh);
             if ~any(guess_mask(:))
                 guess_mask = cell_mask.*(spindle_prob*0.6>spindle_mask_thresh);
             else
@@ -56,9 +57,11 @@ function [pars] = findSpindlePoly(ima,cell_mask,second_degree,spindle_prob)
     sugg_ang = -deg2rad(lis.Orientation);
     
     %% Fitting
-    
-    if has_spindle_mask
-        [pars] = weightedOrthogonalFit(ima,guess_mask,bg,[sugg_ang,xc,yc,0],second_degree,1);
+    % TODO: This should be a parameter
+    if second_degree
+        [spb_1,spb_2]=findDotsInMovie(ima,cell_mask);
+        pars=weightedOrthogonalFitConstrained(ima,guess_mask,bg,spb_1,spb_2,1);
+        pars = convertParabollaFit2OldFit(spb_1,spb_2,pars);
     else
         [pars] = weightedOrthogonalFit(ima,guess_mask,bg,[sugg_ang,xc,yc,0],second_degree,1);
     end
@@ -84,7 +87,7 @@ function [pars] = findSpindlePoly(ima,cell_mask,second_degree,spindle_prob)
 %     plot(x,y)
 %     scatter(pars(2),pars(3))
 %     scatter(xc,yc)
-%     pause(0.5)
+%     pause(0.2)
     
     
 end

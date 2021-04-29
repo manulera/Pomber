@@ -32,7 +32,7 @@ end
 %% Time value
 t_str = datestr(seconds(handles.time(handles.currentt)),'HH:MM:SS');
 tp_str = [num2str(handles.currentt) ' / ' num2str(handles.tlen)];
-handles.text_time.String = [handles.pos_name ' - Timepoint: ' tp_str ' - ' t_str];
+handles.text_time.String = [handles.pos_name ' - Timepoint: ' tp_str ' - ' t_str ' - ' num2str(numel(handles.cells)) ' cells'];
 
 %% Display the limits of the intensity
 if handles.toggled ~=4

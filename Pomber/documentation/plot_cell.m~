@@ -31,9 +31,13 @@ p = defaultSpindleParameters();
 [xx,yy]=makeParallelCurves(x,y,fit,p.total_width,1);
 
 % Here we make a logical array that is true for the lines we consider as
-% singal
-all_curves = size(xx,1);
+% signal
 
+signal = p.center_line-p.signal_width:p.center_line+p.signal_width;
+background = false(1,p.total_width*2+1);
+bg1 = p.center_line-p.signal_width-1;
+bg2 = p.center_line+p.signal_width+1;
+background=[bg1-p.background_width bg1 bg2 bg2+p.background_width];
 
 figure
 imshow(ima,[100,180])
@@ -41,10 +45,27 @@ hold on
 xlim([box(1),box(1)+box(3)])
 ylim([box(2),box(2)+box(4)])
 plot(cont(:,2),cont(:,1),'y','LineWidth',2)
-scatter(xx(:),yy(:))
 
+plot(x,y,'blue','LineWidth',2)
 
+for i = signal([1,end])
+    plot(xx(i,:),yy(i,:),'g','LineWidth',2)
+end
 
+for i = background
+    plot(xx(i,:),yy(i,:),'magenta','LineWidth',2)
+end
 
+%%
 
+ios_feature = this_cell
+
+ima2 = handles.video{2}(:,:,time_point_movie);
+
+figure
+imshow(ima2,[100,180])
+hold on
+xlim([box(1),box(1)+box(3)])
+ylim([box(2),box(2)+box(4)])
+plot(cont(:,2),cont(:,1),'y','LineWidth',2)
 

@@ -41,6 +41,8 @@ classdef cellu < handle
                         self.features{i} = f_ios(self);
                     case 5
                         self.features{i} = f_dots(self);
+                    case 7
+                        self.features{i} = f_ios_base(self);
                 end
             end
         end

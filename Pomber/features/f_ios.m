@@ -23,6 +23,11 @@ classdef f_ios < f_ios_base
     methods
         %% Constructor and related
         function obj = f_ios(c)
+            % If you don't specifically call the parent constructor here,
+            % it will call it on its own without the argument (or something
+            % like that)
+            
+            obj@f_ios_base(c);
             obj.name = 'ios';
             obj.clear(c);
         end

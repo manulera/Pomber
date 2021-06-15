@@ -19,6 +19,8 @@ classdef cellu < handle
         % is 1, which corresponds to none)
         an_type
         
+        % You can add a mark at a certain timepoint (only one for now)
+        landmark
     end
     methods
         %% Constructor and related
@@ -26,6 +28,7 @@ classdef cellu < handle
             % Create an empty cell, which only includes the masks of the
             % cell, where the cell is, and an empty array of analysis
             % types.
+            self.landmark = [];
             self.masks = masks;
             self.list = list;
             self.an_type = an_type;
@@ -182,6 +185,7 @@ classdef cellu < handle
             % Show the image
             imshow(ima,contrast,'InitialMagnification','fit','Parent',this_axis)
             
+            
             % Plot the cell contour
             hold(this_axis,'on');
             xx = cont(:,2)-x_lims(1)+1;
@@ -199,6 +203,15 @@ classdef cellu < handle
                 end
             end
             
+            % Mark the landmark
+            if ~isempty(self.landmark)
+                if i==self.landmark
+                    col = 'green';
+                else
+                    col = 'red';
+                end
+                text(this_axis,10,10,'Landmark','Color',col)
+            end
         end
         
         
@@ -270,6 +283,12 @@ classdef cellu < handle
                     self.features{c}.measureIntensity(sum_video{c}(:,:,self.list),self.masks);
                 end
             end
+        end
+        
+        function addLandmark(self,t)
+            % Set a certain timepoint as the landmark
+            i = find(self.list==t);
+            self.landmark = i;
         end
         %% Export data
         function export(self,handles,dir_c)

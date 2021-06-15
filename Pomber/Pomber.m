@@ -22,7 +22,7 @@ function varargout = Pomber(varargin)
 
 % Edit the above text to modify the response to help Pomber
 
-% Last Modified by GUIDE v2.5 06-Nov-2019 18:34:40
+% Last Modified by GUIDE v2.5 11-Jun-2021 15:12:35
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -553,4 +553,10 @@ pom_show_extra(handles);
 % --- Executes on button press in butt_measure_int.
 function butt_measure_int_Callback(hObject, eventdata, handles)
 handles = pom_measure_intensities(handles);
+guidata(hObject, handles);
+
+
+% --- Executes on button press in butt_landmark.
+function butt_landmark_Callback(hObject, eventdata, handles)
+handles = pom_add_landmark(handles);
 guidata(hObject, handles);

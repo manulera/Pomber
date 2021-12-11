@@ -106,14 +106,14 @@ classdef f_ios < f_ios_base
         
          %% Functions called after the feature is found
         function measureIntensity(self,cut_video,cell_masks,indexes2analyze)
+
+            % Calculate the sum of intensity in the midzone
+            if nargin<4
+                indexes2analyze = 1:numel(self.spindle_feature.spind);
+            end
             
             % Parent method
             self.measureIntensity@f_ios_base(cut_video,cell_masks,indexes2analyze);
-            
-            % Calculate the sum of intensity in the midzone
-            if nargin<4||isempty(indexes2analyze)
-                indexes2analyze = 1:numel(self.spindle_feature.spind);
-            end
             
             for i = indexes2analyze
                 
@@ -181,7 +181,14 @@ classdef f_ios < f_ios_base
             self.displayCloseup@f_ios_base(this_axis,i,x_lims,y_lims,transposing);
             
             color = 'green';
+            
+            [xx,yy]=self.spindle_feature.spindleParallelCurves(i);
+            xx = xx-x_lims(1)+1;
+            yy = yy-y_lims(1)+1;
 
+            xx = xx([1,ceil(end/2),end],:);
+            yy = yy([1,ceil(end/2),end],:);
+            
             if ~any(isnan(self.edges(i,:)))
                 xx = xx(:,self.edges(i,:));
                 yy = yy(:,self.edges(i,:));
